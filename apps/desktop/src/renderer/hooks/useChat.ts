@@ -1,11 +1,13 @@
 import { useCallback } from 'react';
 import { useChatStore } from '../stores/chatStore';
+import { useAuthStore } from '../stores/authStore';
 import type { AIContext } from '@cursi/shared';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
 export function useChat() {
   const store = useChatStore();
+  const { session } = useAuthStore();
 
   const sendMessage = useCallback(
     async (message: string, context?: AIContext) => {
@@ -23,13 +25,14 @@ export function useChat() {
           context: context ?? store.context ?? undefined,
         });
 
-        // TODO: attach auth token from Supabase session
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
         const response = await fetch(`${API_URL}/v1/chat`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            // Authorization: `Bearer ${session.access_token}`,
-          },
+          headers,
           body,
         });
 

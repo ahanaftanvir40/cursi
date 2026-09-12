@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DEFAULT_SHORTCUT } from '@cursi/shared';
+import { useAuthStore } from '../stores/authStore';
 
 interface SettingsPageProps {
   onNavigate: (route: '/chat' | '/settings') => void;
@@ -9,6 +10,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
   const [shortcut, setShortcut] = useState(DEFAULT_SHORTCUT);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const { user, signOut } = useAuthStore();
 
   const handleSaveShortcut = async () => {
     setSaving(true);
@@ -75,7 +77,23 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
           <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
             About
           </h2>
-          <p className="text-xs text-white/40">Cursi — AI for your entire desktop.</p>
+          <p className="text-xs text-white/40">Cursi - AI for your entire desktop.</p>
+        </section>
+
+        {/* Account */}
+        <section>
+          <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
+            Account
+          </h2>
+          {user && (
+            <p className="text-xs text-white/40 mb-3 truncate">{user.email}</p>
+          )}
+          <button
+            onClick={() => void signOut()}
+            className="px-4 py-2 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-sm text-white/60 hover:text-red-400 transition-all"
+          >
+            Sign out
+          </button>
         </section>
       </div>
     </div>
