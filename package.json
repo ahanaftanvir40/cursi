@@ -4,7 +4,7 @@
   "private": true,
   "description": "Cursi - AI for your entire desktop",
   "scripts": {
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",

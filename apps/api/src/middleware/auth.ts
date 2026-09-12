@@ -11,13 +11,12 @@ declare module 'fastify' {
 
 const authPlugin: FastifyPluginAsync = async (fastify) => {
   const supabaseUrl = process.env['SUPABASE_URL'];
-  const jwtSecret = process.env['SUPABASE_JWT_SECRET'];
 
-  if (!supabaseUrl || !jwtSecret) {
-    throw new Error('SUPABASE_URL and SUPABASE_JWT_SECRET are required');
+  if (!supabaseUrl) {
+    throw new Error('SUPABASE_URL is required');
   }
 
-  // Supabase exposes a JWKS endpoint for JWT verification
+  // Verify JWTs using Supabase's public JWKS endpoint — no secret needed in the API
   const JWKS = createRemoteJWKSet(
     new URL(`${supabaseUrl}/auth/v1/.well-known/jwks.json`),
   );
