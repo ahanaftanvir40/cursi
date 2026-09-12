@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DEFAULT_SHORTCUT } from '@cursi/shared';
 import { useAuthStore } from '../stores/authStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -12,10 +12,21 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
   const [shortcut, setShortcut] = useState(DEFAULT_SHORTCUT);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [launchAtLogin, setLaunchAtLoginState] = useState(false);
   const { user, signOut } = useAuthStore();
   const { freshSessionOnInvoke, setFreshSessionOnInvoke } = useSettingsStore();
   const rootRef = useRef<HTMLDivElement>(null);
   usePanelResize(rootRef);
+
+  // Load launch-at-login state from main process
+  useEffect(() => {
+    window.desktop?.getLaunchAtLogin().then(setLaunchAtLoginState).catch(() => {});
+  }, []);
+
+  const handleLaunchAtLogin = (v: boolean) => {
+    setLaunchAtLoginState(v);
+    window.desktop?.setLaunchAtLogin(v).catch(() => {});
+  };
 
   const handleSaveShortcut = async () => {
     if (!window.desktop) return;
@@ -80,6 +91,33 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
           <p className="mt-2 text-xs text-white/30">
             Use Electron accelerator format, e.g. <code className="font-mono">CommandOrControl+Shift+Space</code>
           </p>
+        </section>
+
+        {/* System */}
+        <section>
+          <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
+            System
+          </h2>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <button
+              role="switch"
+              aria-checked={launchAtLogin}
+              onClick={() => handleLaunchAtLogin(!launchAtLogin)}
+              className={`relative mt-0.5 rounded-full shrink-0 transition-colors duration-200 focus:outline-none ${launchAtLogin ? 'bg-cursi-500' : 'bg-white/15'}`}
+              style={{ height: 18, width: 32 }}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${launchAtLogin ? 'translate-x-3.5' : 'translate-x-0'}`}
+                style={{ width: 14, height: 14 }}
+              />
+            </button>
+            <div>
+              <p className="text-sm text-white/70 leading-snug">Launch at login</p>
+              <p className="text-xs text-white/35 mt-0.5 leading-snug">
+                Automatically start Cursi when you log in to your Mac.
+              </p>
+            </div>
+          </label>
         </section>
 
         {/* Session behaviour */}

@@ -29,6 +29,12 @@ export function setupAppLifecycle(panel: BrowserWindow): void {
   if (process.platform === 'darwin') {
     app.dock?.hide();
   }
+
+  // Enable launch at login automatically on first run
+  const settings = app.getLoginItemSettings();
+  if (!settings.openAtLogin) {
+    app.setLoginItemSettings({ openAtLogin: true, openAsHidden: true });
+  }
 }
 
 /** Call this to enable/disable launch at login */

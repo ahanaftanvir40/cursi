@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Cursi - AI for your entire desktop",
+  "author": "Ahanaf Tanvir",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -53,7 +54,7 @@
       "target": [
         { "target": "dmg", "arch": ["arm64"] }
       ],
-      "icon": "resources/tray-icon.png",
+      "icon": "resources/icon.icns",
       "category": "public.app-category.productivity",
       "darkModeSupport": true,
       "extendInfo": {

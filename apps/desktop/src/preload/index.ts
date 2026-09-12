@@ -31,6 +31,12 @@ const desktopApi = {
   getAppInfo: (): Promise<{ version: string; name: string; platform: string }> =>
     ipcRenderer.invoke('app:getInfo'),
 
+  getLaunchAtLogin: (): Promise<boolean> =>
+    ipcRenderer.invoke('app:getLaunchAtLogin'),
+
+  setLaunchAtLogin: (enable: boolean): Promise<void> =>
+    ipcRenderer.invoke('app:setLaunchAtLogin', enable),
+
   resizePanel: (height: number): Promise<void> =>
     ipcRenderer.invoke(IPC.RESIZE_PANEL, height),
 

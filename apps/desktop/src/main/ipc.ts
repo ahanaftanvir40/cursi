@@ -2,6 +2,7 @@ import { ipcMain, BrowserWindow, app } from 'electron';
 import { hideAIPanel, showAIPanel, repositionNearCursor } from './windows';
 import { updateShortcut } from './shortcuts';
 import { gatherContext } from './context-engine';
+import { setLaunchAtLogin } from './app-lifecycle';
 
 // Inline channel names — avoids ESM/CJS mismatch with @cursi/shared in main process
 const IPC_CHANNELS = {
@@ -49,6 +50,14 @@ export function registerIpcHandlers(panel: BrowserWindow): void {
     if (panel.isVisible()) {
       repositionNearCursor(panel);
     }
+  });
+
+  // Launch at login
+  ipcMain.handle('app:getLaunchAtLogin', () => {
+    return app.getLoginItemSettings().openAtLogin;
+  });
+  ipcMain.handle('app:setLaunchAtLogin', (_event, enable: boolean) => {
+    setLaunchAtLogin(enable);
   });
 
   // App info

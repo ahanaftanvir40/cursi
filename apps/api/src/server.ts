@@ -26,20 +26,20 @@ const fastify = Fastify({
 
 await fastify.register(cors, {
   origin: (origin, cb) => {
+    // Allow requests with no origin: packaged Electron (file://), curl, mobile
+    if (!origin) return cb(null, true);
+
     const allowed = [
       'http://localhost:5173',
       'http://localhost:3000',
       'app://cursi',
+      'file://',         // packaged Electron renderer
     ];
-    // Allow requests with no origin (e.g. Electron, curl, mobile)
-    if (!origin || allowed.includes(origin)) {
-      cb(null, true);
-    } else if (isDev) {
-      // In dev, allow any localhost origin
-      cb(null, true);
-    } else {
-      cb(new Error('Not allowed by CORS'), false);
-    }
+
+    if (allowed.some((a) => origin.startsWith(a))) return cb(null, true);
+    if (isDev) return cb(null, true); // allow everything in dev
+
+    cb(new Error(`CORS: origin '${origin}' not allowed`), false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
