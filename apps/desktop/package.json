@@ -1,0 +1,73 @@
+{
+  "name": "@cursi/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cursi - AI for your entire desktop",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "preview": "electron-vite preview",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "clean": "rm -rf out dist"
+  },
+  "dependencies": {
+    "@cursi/shared": "workspace:*",
+    "@supabase/supabase-js": "^2.47.10",
+    "electron-store": "^10.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^3.0.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.6"
+  },
+  "build": {
+    "appId": "com.cursi.app",
+    "productName": "Cursi",
+    "copyright": "Copyright 2026 Cursi",
+    "directories": {
+      "buildResources": "resources",
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] },
+        { "target": "zip", "arch": ["arm64", "x64"] }
+      ],
+      "category": "public.app-category.productivity",
+      "darkModeSupport": true,
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Cursi does not use the microphone.",
+        "LSUIElement": true
+      }
+    },
+    "dmg": {
+      "title": "Cursi",
+      "window": { "width": 540, "height": 380 }
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

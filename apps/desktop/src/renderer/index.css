@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Drag region for frameless window */
+.drag-region {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Remove default body background — we use vibrancy */
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow text selection inside messages */
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+}
+
+/* Prose code blocks */
+pre, code {
+  font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+}
