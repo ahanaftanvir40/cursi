@@ -11,6 +11,7 @@ const IPC = {
   GET_CONTEXT: 'context:get',
   UPDATE_SHORTCUT: 'shortcut:update',
   SHORTCUT_TRIGGERED: 'shortcut:triggered',
+  RESIZE_PANEL: 'panel:resize',
 } as const;
 
 // Narrow, explicit API exposed to the renderer
@@ -29,6 +30,9 @@ const desktopApi = {
 
   getAppInfo: (): Promise<{ version: string; name: string; platform: string }> =>
     ipcRenderer.invoke('app:getInfo'),
+
+  resizePanel: (height: number): Promise<void> =>
+    ipcRenderer.invoke(IPC.RESIZE_PANEL, height),
 
   onShortcutTriggered: (callback: (context: AIContext) => void): (() => void) => {
     const handler = (_event: Electron.IpcRendererEvent, context: AIContext) => {

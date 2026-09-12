@@ -1,7 +1,10 @@
-import { globalShortcut, BrowserWindow, clipboard } from 'electron';
-import { DEFAULT_SHORTCUT, IPC } from '@cursi/shared';
+import { globalShortcut, BrowserWindow } from 'electron';
 import { showAIPanel, hideAIPanel } from './windows';
 import { gatherContext } from './context-engine';
+
+// Inlined to avoid ESM/CJS mismatch with @cursi/shared in Electron main process
+const DEFAULT_SHORTCUT = 'CommandOrControl+Shift+Space';
+const SHORTCUT_TRIGGERED = 'shortcut:triggered';
 
 let currentShortcut = DEFAULT_SHORTCUT;
 
@@ -26,7 +29,7 @@ export function registerShortcut(panel: BrowserWindow, combo = DEFAULT_SHORTCUT)
 
     // Small delay to ensure renderer event listeners are mounted before sending
     setTimeout(() => {
-      panel.webContents.send(IPC.SHORTCUT_TRIGGERED, context);
+      panel.webContents.send(SHORTCUT_TRIGGERED, context);
     }, 150);
   });
 
@@ -45,7 +48,7 @@ export function updateShortcut(panel: BrowserWindow, newCombo: string): boolean 
     const context = await gatherContext();
     showAIPanel();
     setTimeout(() => {
-      panel.webContents.send(IPC.SHORTCUT_TRIGGERED, context);
+      panel.webContents.send(SHORTCUT_TRIGGERED, context);
     }, 150);
   });
 

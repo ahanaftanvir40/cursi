@@ -43,8 +43,8 @@ export default function App(): React.ReactElement {
   // Splash while auth is initializing
   if (!initialized || loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-black/60 backdrop-blur-2xl rounded-3xl border border-white/10">
-        <span className="w-5 h-5 border-2 border-cursi-500/40 border-t-cursi-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center bg-black/70 backdrop-blur-3xl rounded-2xl" style={{ height: 52 }}>
+        <span className="w-3.5 h-3.5 border border-cursi-500/40 border-t-cursi-500 rounded-full animate-spin" />
       </div>
     );
   }

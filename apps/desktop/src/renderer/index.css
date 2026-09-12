@@ -11,12 +11,15 @@
 }
 
 /* Remove default body background — we use vibrancy */
-body {
+html, body, #root {
   margin: 0;
   padding: 0;
   background: transparent;
   user-select: none;
   -webkit-user-select: none;
+  /* No fixed height — content drives the window size via IPC */
+  height: auto;
+  overflow: hidden;
 }
 
 /* Allow text selection inside messages */

@@ -16,10 +16,11 @@ export const API_ROUTES = {
 // ─── Window ───────────────────────────────────────────────────────────────────
 
 export const AI_PANEL = {
-  width: 680,
-  height: 520,
-  minWidth: 480,
-  minHeight: 360,
+  width: 400,
+  height: 52,      // starts as input-bar only; grows dynamically
+  minWidth: 400,
+  minHeight: 52,
+  maxHeight: 380,  // never taller than this
 } as const;
 
 // ─── LLM defaults ─────────────────────────────────────────────────────────────
@@ -39,4 +40,5 @@ export const IPC = {
   GET_CONTEXT: 'context:get',
   CONTEXT_RESULT: 'context:result',
   UPDATE_SHORTCUT: 'shortcut:update',
+  RESIZE_PANEL: 'panel:resize',
 } as const;

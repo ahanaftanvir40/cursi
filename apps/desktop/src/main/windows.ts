@@ -1,9 +1,19 @@
 import { BrowserWindow, screen } from 'electron';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { AI_PANEL } from '@cursi/shared';
+
+// Inlined to avoid ESM/CJS mismatch with @cursi/shared in Electron main process
+const AI_PANEL = {
+  width:     400,
+  height:    52,
+  minWidth:  400,
+  minHeight: 52,
+  maxHeight: 380,
+} as const;
 
 let aiPanel: BrowserWindow | null = null;
+// Cursor position captured at the moment the shortcut fires
+let savedCursorPoint: Electron.Point | null = null;
 
 function resolvePreloadPath(): string {
   // electron-vite outputs CJS as index.js, ESM as index.mjs
@@ -14,23 +24,50 @@ function resolvePreloadPath(): string {
   return resolved;
 }
 
-export async function createAIPanel(): Promise<BrowserWindow> {
-  const { width: screenW, height: screenH } = screen.getPrimaryDisplay().workAreaSize;
+/**
+ * Position a panel window near the current cursor position.
+ * Exported so the IPC resize handler can reposition after height changes.
+ */
+export function repositionNearCursor(panel: BrowserWindow): void {
+  const OFFSET = 8;
+  // Use saved position from shortcut time, not current mouse position
+  const point = savedCursorPoint ?? screen.getCursorScreenPoint();
+  const display = screen.getDisplayNearestPoint(point);
+  const { x: wx, y: wy, width: ww, height: wh } = display.workArea;
+  const size = panel.getSize();
+  const panelW: number = size[0] ?? AI_PANEL.width;
+  const panelH: number = size[1] ?? AI_PANEL.height;
 
+  let panelX = point.x + OFFSET;
+  let panelY = point.y + OFFSET;
+
+  if (panelX + panelW > wx + ww) panelX = point.x - panelW - OFFSET;
+  if (panelY + panelH > wy + wh) panelY = point.y - panelH - OFFSET;
+
+  panelX = Math.max(wx, Math.min(panelX, wx + ww - panelW));
+  panelY = Math.max(wy, Math.min(panelY, wy + wh - panelH));
+
+  panel.setPosition(Math.round(panelX), Math.round(panelY));
+}
+
+function positionNearCursor(): void {
+  if (aiPanel) repositionNearCursor(aiPanel);
+}
+
+export async function createAIPanel(): Promise<BrowserWindow> {
   aiPanel = new BrowserWindow({
     width: AI_PANEL.width,
     height: AI_PANEL.height,
     minWidth: AI_PANEL.minWidth,
     minHeight: AI_PANEL.minHeight,
-    // Center horizontally, slightly above center vertically
-    x: Math.round((screenW - AI_PANEL.width) / 2),
-    y: Math.round(screenH * 0.3),
+    // Position is set dynamically near the cursor when shown
 
     // Frameless floating panel
     frame: false,
     transparent: true,
-    vibrancy: 'under-window',      // macOS frosted glass
-    visualEffectState: 'active',
+    // No vibrancy on the window — it fills the entire frame regardless of content height.
+    // CSS backdrop-filter on the root div handles the frosted glass effect instead,
+    // and it only covers the rendered content area.
     roundedCorners: true,
 
     // Always on top — use 'floating' so it accepts keyboard input on macOS
@@ -100,9 +137,11 @@ export function getAIPanel(): BrowserWindow | null {
 
 export function showAIPanel(): void {
   if (!aiPanel) return;
+  // Capture cursor position NOW (before user moves mouse while window opens)
+  savedCursorPoint = screen.getCursorScreenPoint();
+  positionNearCursor();
   aiPanel.show();
   aiPanel.focus();
-  // On macOS, explicitly move focus to the app so keyboard input works
   aiPanel.moveTop();
 }
 

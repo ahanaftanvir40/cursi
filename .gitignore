@@ -43,3 +43,9 @@ pnpm-debug.log*
 
 # Test coverage
 coverage/
+
+#cursor
+.cursor
+
+#docs
+docs/
