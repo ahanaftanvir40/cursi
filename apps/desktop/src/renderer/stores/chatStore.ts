@@ -6,17 +6,23 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   streaming?: boolean;
+  /** Context that was active when this user message was sent */
+  contextSnapshot?: string;
 }
 
 interface ChatState {
   messages: ChatMessage[];
   conversationId: string | null;
+  /** The context that started this session — pinned at the top */
+  initialContext: AIContext | null;
+  /** The latest clipboard context — shown above the input when different from initialContext */
   context: AIContext | null;
   isStreaming: boolean;
   error: string | null;
 
   setContext: (ctx: AIContext | null) => void;
-  addUserMessage: (content: string) => string;
+  setInitialContext: (ctx: AIContext | null) => void;
+  addUserMessage: (content: string, contextSnapshot?: string) => string;
   startAssistantMessage: () => string;
   appendToLastMessage: (delta: string) => void;
   finalizeLastMessage: (id: string) => void;
@@ -29,16 +35,18 @@ interface ChatState {
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   conversationId: null,
+  initialContext: null,
   context: null,
   isStreaming: false,
   error: null,
 
   setContext: (ctx) => set({ context: ctx }),
+  setInitialContext: (ctx) => set({ initialContext: ctx }),
 
-  addUserMessage: (content) => {
+  addUserMessage: (content, contextSnapshot) => {
     const id = crypto.randomUUID();
     set((s) => ({
-      messages: [...s.messages, { id, role: 'user', content }],
+      messages: [...s.messages, { id, role: 'user', content, contextSnapshot }],
     }));
     return id;
   },
@@ -75,5 +83,5 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setError: (err) => set({ error: err }),
 
   reset: () =>
-    set({ messages: [], conversationId: null, context: null, isStreaming: false, error: null }),
+    set({ messages: [], conversationId: null, initialContext: null, context: null, isStreaming: false, error: null }),
 }));

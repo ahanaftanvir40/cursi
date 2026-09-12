@@ -8,7 +8,7 @@ const AI_PANEL = {
   height:    52,
   minWidth:  400,
   minHeight: 52,
-  maxHeight: 380,
+  maxHeight: 560,
 } as const;
 
 let aiPanel: BrowserWindow | null = null;
@@ -93,8 +93,7 @@ export async function createAIPanel(): Promise<BrowserWindow> {
   // Load the renderer
   if (process.env['ELECTRON_RENDERER_URL']) {
     await aiPanel.loadURL(process.env['ELECTRON_RENDERER_URL']);
-    // Open DevTools in dev mode so errors are visible
-    aiPanel.webContents.openDevTools({ mode: 'detach' });
+    // DevTools disabled — open manually from tray or via Cmd+Option+I if needed
   } else {
     await aiPanel.loadFile(join(__dirname, '../renderer/index.html'));
   }
@@ -117,11 +116,8 @@ export async function createAIPanel(): Promise<BrowserWindow> {
   // doesn't immediately dismiss it before focus settles
   aiPanel.on('blur', () => {
     if (!aiPanel) return;
-    if (aiPanel.webContents.isDevToolsOpened()) return;
-    // Only auto-hide in production; in dev keep it open for easier debugging
-    if (!process.env['ELECTRON_RENDERER_URL']) {
-      aiPanel.hide();
-    }
+    if (aiPanel.webContents.isDevToolsOpened()) return; // don't hide when inspecting
+    aiPanel.hide();
   });
 
   aiPanel.on('closed', () => {

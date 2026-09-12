@@ -17,9 +17,29 @@ export function MessageList({ messages, isStreaming }: MessageListProps): React.
 
   return (
     <div className="overflow-y-auto px-3 py-2 space-y-1.5" style={{ maxHeight: 220 }}>
-      {messages.map((msg) => (
-        <MessageBubble key={msg.id} message={msg} />
-      ))}
+      {messages.map((msg, i) => {
+        // Show context chip above a user message when its context differs from the previous user message
+        const prevUserMsg = messages.slice(0, i).reverse().find((m) => m.role === 'user');
+        const showContextChip =
+          msg.role === 'user' &&
+          msg.contextSnapshot &&
+          msg.contextSnapshot !== prevUserMsg?.contextSnapshot;
+        return (
+          <React.Fragment key={msg.id}>
+            {showContextChip && (
+              <div className="flex justify-end">
+                <span className="flex items-center gap-1 text-[10px] text-white/25 font-mono max-w-[86%] truncate">
+                  <span className="w-1 h-1 rounded-full bg-cursi-400/40 shrink-0" />
+                  {msg.contextSnapshot!.length > 40
+                    ? msg.contextSnapshot!.slice(0, 40) + '…'
+                    : msg.contextSnapshot}
+                </span>
+              </div>
+            )}
+            <MessageBubble message={msg} />
+          </React.Fragment>
+        );
+      })}
       {isStreaming && (
         <div className="flex items-center gap-1 px-1 py-1">
           <span className="w-1 h-1 rounded-full bg-white/30 animate-bounce [animation-delay:0ms]" />

@@ -20,7 +20,7 @@ export const AI_PANEL = {
   height: 52,      // starts as input-bar only; grows dynamically
   minWidth: 400,
   minHeight: 52,
-  maxHeight: 380,  // never taller than this
+  maxHeight: 560,  // tall enough for settings page
 } as const;
 
 // ─── LLM defaults ─────────────────────────────────────────────────────────────

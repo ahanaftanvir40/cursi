@@ -15,7 +15,12 @@ export function useChat() {
 
       store.setError(null);
       store.setStreaming(true);
-      store.addUserMessage(message);
+      // Snapshot whatever context is active right now for inline display in the thread
+      const activeContext = context ?? store.context;
+      const contextSnapshot = activeContext?.type === 'clipboard'
+        ? activeContext.clipboardText
+        : undefined;
+      store.addUserMessage(message, contextSnapshot);
       const assistantId = store.startAssistantMessage();
 
       try {
@@ -89,8 +94,10 @@ export function useChat() {
     messages: store.messages,
     isStreaming: store.isStreaming,
     error: store.error,
+    initialContext: store.initialContext,
     context: store.context,
     sendMessage,
+    setInitialContext: store.setInitialContext,
     setContext: store.setContext,
     reset: store.reset,
   };

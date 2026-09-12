@@ -24,13 +24,12 @@ export function registerShortcut(panel: BrowserWindow, combo = DEFAULT_SHORTCUT)
     const context = await gatherContext();
     console.log('[shortcuts] Context gathered:', context.type, context.clipboardText?.slice(0, 40));
 
-    // Show panel first so renderer is ready to receive the IPC event
-    showAIPanel();
+    // Send context BEFORE showing so the renderer updates state atomically
+    // before the window becomes visible — no flash of old session
+    panel.webContents.send(SHORTCUT_TRIGGERED, context);
 
-    // Small delay to ensure renderer event listeners are mounted before sending
-    setTimeout(() => {
-      panel.webContents.send(SHORTCUT_TRIGGERED, context);
-    }, 150);
+    // Show after state is already updated
+    showAIPanel();
   });
 
   if (!success) {
@@ -46,10 +45,8 @@ export function updateShortcut(panel: BrowserWindow, newCombo: string): boolean 
 
   const success = globalShortcut.register(newCombo, async () => {
     const context = await gatherContext();
+    panel.webContents.send(SHORTCUT_TRIGGERED, context);
     showAIPanel();
-    setTimeout(() => {
-      panel.webContents.send(SHORTCUT_TRIGGERED, context);
-    }, 150);
   });
 
   if (success) {

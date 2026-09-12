@@ -4,18 +4,39 @@ import type { AIContext } from '@cursi/shared';
 interface ContextBadgeProps {
   context: AIContext;
   onDismiss: () => void;
+  /** When true, renders inline (no background/border-b) for use inside the title bar */
+  inline?: boolean;
 }
 
-export function ContextBadge({ context, onDismiss }: ContextBadgeProps): React.ReactElement | null {
+export function ContextBadge({ context, onDismiss, inline = false }: ContextBadgeProps): React.ReactElement | null {
   if (context.type === 'none') return null;
   const text = context.selectedText ?? context.clipboardText ?? '';
   if (!text) return null;
 
-  const preview = text.length > 60 ? text.slice(0, 60) + '…' : text;
+  // Inline (title bar): shorter preview, no background
+  const maxLen = inline ? 32 : 60;
+  const preview = text.length > maxLen ? text.slice(0, maxLen) + '…' : text;
+
+  if (inline) {
+    return (
+      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-cursi-400/70 shrink-0" />
+        <p className="text-[11px] text-white/40 truncate leading-none font-mono select-none">
+          {preview}
+        </p>
+        <button
+          onClick={onDismiss}
+          className="no-drag text-white/15 hover:text-white/40 transition-colors text-[10px] leading-none shrink-0 ml-0.5"
+          aria-label="Dismiss context"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/4 border-b border-white/5 shrink-0">
-      {/* Tiny clipboard dot */}
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/4 shrink-0">
       <span className="w-1.5 h-1.5 rounded-full bg-cursi-400/70 shrink-0" />
       <p className="flex-1 min-w-0 text-[11px] text-white/40 truncate leading-none selectable font-mono">
         {preview}
