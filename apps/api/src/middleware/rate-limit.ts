@@ -9,7 +9,7 @@ const rateLimitPlugin: FastifyPluginAsync = async (fastify) => {
     timeWindow: '1 minute',
     // Per-user rate limiting when authenticated
     keyGenerator: (request) => {
-      return request.userId || request.ip;
+      return (request.userId as string | undefined) || request.ip;
     },
     errorResponseBuilder: () => ({
       error: 'Too many requests',

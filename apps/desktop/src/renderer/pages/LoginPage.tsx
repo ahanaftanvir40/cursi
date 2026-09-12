@@ -60,7 +60,7 @@ export function LoginPage(): React.ReactElement {
             required
             autoFocus
             className="
-              w-full rounded-xl bg-white/8 border border-white/10
+              w-full rounded-xl bg-neutral-800 border border-white/10
               px-3.5 py-2.5 text-sm text-white placeholder-white/30
               focus:outline-none focus:ring-1 focus:ring-cursi-500/60
               transition-all duration-150
@@ -74,7 +74,7 @@ export function LoginPage(): React.ReactElement {
             required
             minLength={8}
             className="
-              w-full rounded-xl bg-white/8 border border-white/10
+              w-full rounded-xl bg-neutral-800 border border-white/10
               px-3.5 py-2.5 text-sm text-white placeholder-white/30
               focus:outline-none focus:ring-1 focus:ring-cursi-500/60
               transition-all duration-150

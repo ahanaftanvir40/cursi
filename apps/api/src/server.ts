@@ -25,10 +25,25 @@ const fastify = Fastify({
 // ─── Plugins ──────────────────────────────────────────────────────────────────
 
 await fastify.register(cors, {
-  origin: isDev
-    ? true
-    : ['app://cursi', 'http://localhost:3000'],
+  origin: (origin, cb) => {
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'app://cursi',
+    ];
+    // Allow requests with no origin (e.g. Electron, curl, mobile)
+    if (!origin || allowed.includes(origin)) {
+      cb(null, true);
+    } else if (isDev) {
+      // In dev, allow any localhost origin
+      cb(null, true);
+    } else {
+      cb(new Error('Not allowed by CORS'), false);
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 });
 
 await fastify.register(rateLimitPlugin);

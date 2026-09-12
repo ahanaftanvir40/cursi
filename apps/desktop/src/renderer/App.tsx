@@ -19,6 +19,8 @@ export default function App(): React.ReactElement {
 
   // Listen for navigation events from the main process (e.g. tray menu)
   useEffect(() => {
+    console.log('[App] window.desktop available:', !!window.desktop);
+    if (!window.desktop?.onNavigate) return;
     const unsubscribe = window.desktop.onNavigate((r) => {
       if (r === '/settings' || r === '/chat') {
         setRoute(r as Route);
@@ -31,7 +33,7 @@ export default function App(): React.ReactElement {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        void window.desktop.hideWindow();
+        void window.desktop?.hideWindow();
       }
     };
     window.addEventListener('keydown', handleKeyDown);

@@ -13,6 +13,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
   const { user, signOut } = useAuthStore();
 
   const handleSaveShortcut = async () => {
+    if (!window.desktop) return;
     setSaving(true);
     setStatus('idle');
     const result = await window.desktop.updateShortcut(shortcut);
@@ -46,7 +47,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
               value={shortcut}
               onChange={(e) => setShortcut(e.target.value)}
               className="
-                flex-1 rounded-xl bg-white/8 border border-white/10
+                flex-1 rounded-xl bg-neutral-800 border border-white/10
                 px-3 py-2 text-sm text-white placeholder-white/30
                 focus:outline-none focus:ring-1 focus:ring-cursi-500/60
               "

@@ -6,6 +6,7 @@ interface ChatInputProps {
   onSubmit: () => void;
   isStreaming: boolean;
   placeholder?: string;
+  hasContext?: boolean;
 }
 
 export function ChatInput({
@@ -13,14 +14,36 @@ export function ChatInput({
   onChange,
   onSubmit,
   isStreaming,
-  placeholder = 'Ask anything…',
+  placeholder,
+  hasContext = false,
 }: ChatInputProps): React.ReactElement {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const effectivePlaceholder = placeholder
+    ?? (hasContext ? 'What do you want to do with this?' : 'Ask anything…');
 
   // Auto-focus when mounted (panel just opened)
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
+
+  // Re-focus when context arrives (shortcut trigger with new context)
+  useEffect(() => {
+    if (hasContext) {
+      setTimeout(() => textareaRef.current?.focus(), 50);
+    }
+  }, [hasContext]);
+
+  // Listen for quick suggestion clicks from empty state
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const text = (e as CustomEvent<string>).detail;
+      onChange(text);
+      setTimeout(() => textareaRef.current?.focus(), 50);
+    };
+    window.addEventListener('cursi:suggestion', handler);
+    return () => window.removeEventListener('cursi:suggestion', handler);
+  }, [onChange]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -44,11 +67,11 @@ export function ChatInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
+        placeholder={effectivePlaceholder}
         rows={1}
         disabled={isStreaming}
         className="
-          flex-1 resize-none rounded-xl bg-white/8 border border-white/10
+          flex-1 resize-none rounded-xl bg-neutral-800 border border-white/10
           px-3.5 py-2.5 text-sm text-white placeholder-white/30
           focus:outline-none focus:ring-1 focus:ring-cursi-500/60
           disabled:opacity-50 transition-all duration-150

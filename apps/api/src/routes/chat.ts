@@ -17,8 +17,9 @@ export const chatRoutes: FastifyPluginAsync = async (fastify) => {
     const context = parsed.data.context as import('@cursi/shared').AIContext | undefined;
     const conversationId = parsed.data.conversationId;
     const userId = request.userId;
+    const userEmail = request.userEmail;
 
-    const chatParams: import('../services/chat.service.js').ChatParams = { userId, message };
+    const chatParams: import('../services/chat.service.js').ChatParams = { userId, userEmail, message };
     if (conversationId !== undefined) chatParams.conversationId = conversationId;
     if (context !== undefined) chatParams.context = context;
 
@@ -28,6 +29,7 @@ export const chatRoutes: FastifyPluginAsync = async (fastify) => {
     } catch (err: unknown) {
       const statusCode = (err as { statusCode?: number }).statusCode ?? 500;
       const message = err instanceof Error ? err.message : 'Internal server error';
+      fastify.log.error({ err, statusCode }, '[chat] startChat failed');
       return reply.code(statusCode).send({ error: message, statusCode });
     }
 
@@ -59,8 +61,9 @@ export const chatRoutes: FastifyPluginAsync = async (fastify) => {
         messageId: assistantMessageId,
       });
     } catch (err) {
-      fastify.log.error(err, '[chat] Streaming error');
-      sendEvent({ type: 'error', error: 'Streaming failed' });
+      const errMsg = err instanceof Error ? err.message : String(err);
+      fastify.log.error({ err, errMsg }, '[chat] Streaming error');
+      sendEvent({ type: 'error', error: errMsg });
     } finally {
       reply.raw.end();
     }

@@ -4,47 +4,26 @@ import type { AIContext } from '@cursi/shared';
 /**
  * MVP context strategy: clipboard-first.
  *
- * We save the current clipboard, simulate Cmd+C to copy the selection,
- * read the new clipboard value, then restore the original content.
- * This is the lowest-friction cross-app approach for macOS MVP.
+ * The user copies text in any app, then presses the shortcut.
+ * We read the clipboard immediately — whatever is there is the context.
  */
 export async function gatherContext(): Promise<AIContext> {
   try {
-    // Save current clipboard
-    const previousText = clipboard.readText();
-    const previousImage = clipboard.readImage();
+    // Read clipboard immediately — user already copied before pressing shortcut
+    const clipboardText = clipboard.readText().trim();
 
-    // Small delay to let the OS settle (shortcut just fired)
-    await sleep(80);
+    console.log('[context-engine] clipboard text:', JSON.stringify(clipboardText.slice(0, 80)));
 
-    // Read whatever is currently in clipboard
-    // In the future this becomes: simulate Cmd+C, wait, read
-    const clipboardText = clipboard.readText();
-
-    // If clipboard changed meaningfully, it's selected text
-    const selectedText = clipboardText !== previousText && clipboardText.length > 0
-      ? clipboardText
-      : undefined;
-
-    // Restore clipboard
-    if (previousText) {
-      clipboard.writeText(previousText);
-    } else if (!previousImage.isEmpty()) {
-      clipboard.writeImage(previousImage);
+    if (clipboardText.length > 0) {
+      return {
+        type: 'clipboard',
+        clipboardText,
+      };
     }
 
-    const context: AIContext = {
-      type: selectedText ? 'selected_text' : (clipboardText ? 'clipboard' : 'none'),
-    };
-    if (selectedText) context.selectedText = selectedText;
-    if (clipboardText) context.clipboardText = clipboardText;
-    return context;
+    return { type: 'none' };
   } catch (err) {
     console.error('[context-engine] Failed to gather context:', err);
     return { type: 'none' };
   }
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

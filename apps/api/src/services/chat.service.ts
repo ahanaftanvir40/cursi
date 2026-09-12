@@ -5,10 +5,12 @@ import {
   saveMessage,
   getConversation,
   touchConversation,
+  upsertUser,
 } from './conversation.service.js';
 
 export interface ChatParams {
   userId: string;
+  userEmail?: string;
   message: string;
   conversationId?: string;
   context?: AIContext;
@@ -22,7 +24,10 @@ export interface ChatResult {
 }
 
 export async function startChat(params: ChatParams): Promise<ChatResult> {
-  const { userId, message, context } = params;
+  const { userId, userEmail, message, context } = params;
+
+  // Ensure user row exists in public.users (FK requirement)
+  await upsertUser(userId, userEmail ?? '');
 
   // Resolve or create conversation
   let conversationId = params.conversationId;

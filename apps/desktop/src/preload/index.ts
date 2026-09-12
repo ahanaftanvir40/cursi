@@ -1,8 +1,19 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { IPC } from '@cursi/shared';
 import type { AIContext } from '@cursi/shared';
 
-// Narrow, explicit API — renderer cannot call arbitrary ipc channels
+// Confirm preload is executing
+console.log('[preload] Script loaded — contextBridge available:', typeof contextBridge !== 'undefined');
+
+// IPC channel names — inlined to avoid importing ESM @cursi/shared in CJS preload
+const IPC = {
+  HIDE_WINDOW: 'window:hide',
+  SHOW_WINDOW: 'window:show',
+  GET_CONTEXT: 'context:get',
+  UPDATE_SHORTCUT: 'shortcut:update',
+  SHORTCUT_TRIGGERED: 'shortcut:triggered',
+} as const;
+
+// Narrow, explicit API exposed to the renderer
 const desktopApi = {
   hideWindow: (): Promise<void> =>
     ipcRenderer.invoke(IPC.HIDE_WINDOW),
@@ -24,7 +35,6 @@ const desktopApi = {
       callback(context);
     };
     ipcRenderer.on(IPC.SHORTCUT_TRIGGERED, handler);
-    // Return cleanup function
     return () => ipcRenderer.removeListener(IPC.SHORTCUT_TRIGGERED, handler);
   },
 
@@ -38,6 +48,6 @@ const desktopApi = {
 };
 
 contextBridge.exposeInMainWorld('desktop', desktopApi);
+console.log('[preload] window.desktop exposed successfully');
 
-// TypeScript global declaration — used by renderer code
 export type DesktopApi = typeof desktopApi;

@@ -1,7 +1,24 @@
 import { eq, desc } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import { conversations, messages } from '../db/schema.js';
+import { conversations, messages, users } from '../db/schema.js';
 import type { Conversation, Message } from '@cursi/shared';
+
+/**
+ * Upsert a user into public.users so the FK from conversations is satisfied.
+ * The JWT payload has the user's sub (id) and email — we sync on every chat.
+ */
+export async function upsertUser(
+  userId: string,
+  email = '',
+): Promise<void> {
+  await db
+    .insert(users)
+    .values({ id: userId, email })
+    .onConflictDoUpdate({
+      target: users.id,
+      set: { email },
+    });
+}
 
 export async function createConversation(
   userId: string,

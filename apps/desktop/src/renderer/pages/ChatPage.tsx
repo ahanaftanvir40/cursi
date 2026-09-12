@@ -15,10 +15,14 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
 
   // Listen for shortcut trigger — context arrives from main process
   useEffect(() => {
+    if (!window.desktop?.onShortcutTriggered) {
+      console.warn('[ChatPage] window.desktop.onShortcutTriggered not available');
+      return;
+    }
+    console.log('[ChatPage] Registering onShortcutTriggered listener');
     const cleanup = window.desktop.onShortcutTriggered((ctx: AIContext) => {
-      if (ctx.type !== 'none') {
-        setContext(ctx);
-      }
+      console.log('[ChatPage] Received context from shortcut:', ctx.type, ctx.clipboardText?.slice(0, 40));
+      setContext(ctx);
     });
     return cleanup;
   }, [setContext]);
@@ -71,7 +75,7 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
       )}
 
       {/* Messages */}
-      <MessageList messages={messages} isStreaming={isStreaming} />
+      <MessageList messages={messages} isStreaming={isStreaming} context={context} />
 
       {/* Error */}
       {error && (
@@ -86,6 +90,7 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
         onChange={setInput}
         onSubmit={handleSubmit}
         isStreaming={isStreaming}
+        hasContext={!!context && context.type !== 'none'}
       />
     </div>
   );

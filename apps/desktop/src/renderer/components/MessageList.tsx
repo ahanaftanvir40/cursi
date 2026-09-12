@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import type { ChatMessage } from '../stores/chatStore';
+import type { AIContext } from '@cursi/shared';
 
 interface MessageListProps {
   messages: ChatMessage[];
   isStreaming: boolean;
+  context?: AIContext | null;
 }
 
-export function MessageList({ messages, isStreaming }: MessageListProps): React.ReactElement {
+export function MessageList({ messages, isStreaming, context }: MessageListProps): React.ReactElement {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -14,10 +16,36 @@ export function MessageList({ messages, isStreaming }: MessageListProps): React.
   }, [messages]);
 
   if (messages.length === 0) {
+    const hasContext = context && context.type !== 'none';
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-2 text-white/20 select-none">
-        <div className="text-4xl">✦</div>
-        <p className="text-sm">Ask anything</p>
+      <div className="flex-1 flex flex-col items-center justify-center gap-3 text-white/20 select-none px-6">
+        <div className="text-3xl">✦</div>
+        {hasContext ? (
+          <>
+            <p className="text-sm text-white/40 text-center">Context loaded — what do you want to do with it?</p>
+            <div className="flex flex-col gap-1.5 w-full max-w-xs">
+              {[
+                'Summarise this',
+                'Explain in simple terms',
+                'Fix grammar & spelling',
+                'Translate to Spanish',
+              ].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  className="text-left text-xs text-white/30 hover:text-white/70 hover:bg-white/5 rounded-lg px-3 py-1.5 transition-all border border-transparent hover:border-white/10"
+                  onClick={() => {
+                    // Dispatch a custom event that ChatPage listens to
+                    window.dispatchEvent(new CustomEvent('cursi:suggestion', { detail: suggestion }));
+                  }}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-sm">Ask anything</p>
+        )}
       </div>
     );
   }
