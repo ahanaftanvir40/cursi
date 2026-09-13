@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @cursi/shared build && pnpm --filter @cursi/api build",
+  "functions": {
+    "apps/api/src/server.ts": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/apps/api/src/server.ts" }
+  ]
+}
