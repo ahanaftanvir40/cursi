@@ -80,13 +80,14 @@ export function ChatInput({
         aria-label="Send"
         className="shrink-0 flex items-center justify-center w-7 h-7 rounded-full mb-0.5 transition-all duration-150"
         style={{
-          background: canSend ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
-          color: canSend ? 'white' : 'rgba(255,255,255,0.25)',
+          background: canSend ? 'var(--accent)' : 'var(--input-bg)',
+          color: canSend ? 'var(--user-bubble-text)' : 'var(--text-muted)',
+          border: canSend ? 'none' : '1px solid var(--border)',
           cursor: canSend ? 'pointer' : 'not-allowed',
         }}
       >
         {isStreaming ? (
-          <span className="w-2.5 h-2.5 border border-white/40 border-t-white rounded-full animate-spin" />
+          <span className="w-2.5 h-2.5 rounded-full animate-spin" style={{ border: '1.5px solid var(--text-muted)', borderTopColor: 'var(--text-primary)' }} />
         ) : (
           <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M5 8.5V1.5M1.5 5 5 1.5 8.5 5"/>

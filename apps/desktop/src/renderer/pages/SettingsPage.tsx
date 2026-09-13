@@ -55,12 +55,13 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
       style={{
         height: 18,
         width: 32,
-        background: checked ? 'var(--accent)' : 'rgba(255,255,255,0.15)',
+        background: checked ? 'var(--accent)' : 'var(--border)',
+        border: checked ? 'none' : '1px solid var(--border)',
       }}
     >
       <span
-        className={`absolute top-0.5 left-0.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${checked ? 'translate-x-3.5' : 'translate-x-0'}`}
-        style={{ width: 14, height: 14 }}
+        className={`absolute top-0.5 left-0.5 rounded-full shadow-sm transition-transform duration-200 ${checked ? 'translate-x-3.5' : 'translate-x-0'}`}
+        style={{ width: 14, height: 14, background: checked ? 'var(--user-bubble-text)' : 'var(--text-secondary)' }}
       />
     </button>
   );
@@ -98,6 +99,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
     <div
       ref={rootRef}
       className="cursi-panel flex flex-col rounded-xl overflow-hidden"
+      style={{ maxHeight: 680 }}
     >
       {/* Header */}
       <div
@@ -106,7 +108,16 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
       >
         <button
           onClick={() => onNavigate('/chat')}
-          className="no-drag w-6 h-6 flex items-center justify-center rounded text-white/40 hover:text-white/80 hover:bg-white/5 transition-all text-sm"
+          className="no-drag w-6 h-6 flex items-center justify-center rounded transition-all text-sm"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
+            (e.currentTarget as HTMLButtonElement).style.background = 'var(--input-bg)';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+          }}
           aria-label="Back"
         >
           ←
@@ -114,7 +125,8 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
         <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Settings</span>
       </div>
 
-      <div className="px-4 py-4 space-y-6">
+      {/* Scrollable content — never clips */}
+      <div className="overflow-y-auto px-4 py-4 space-y-6" style={{ overscrollBehavior: 'contain' }}>
 
         {/* Theme */}
         <section>
@@ -202,8 +214,8 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
             <button
               onClick={handleSaveShortcut}
               disabled={saving}
-              className="px-3 py-2 rounded-xl text-[13px] font-medium text-white disabled:opacity-50 transition-colors"
-              style={{ background: 'var(--accent)' }}
+              className="px-3 py-2 rounded-xl text-[13px] font-medium disabled:opacity-50 transition-colors"
+              style={{ background: 'var(--accent)', color: 'var(--user-bubble-text)' }}
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

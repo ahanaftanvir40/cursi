@@ -16,7 +16,7 @@ const IPC_CHANNELS = {
 const PANEL = {
   width:     400,
   minHeight: 52,
-  maxHeight: 560, // tall enough for settings page
+  maxHeight: 720, // tall enough for settings page with 4 themes
 } as const;
 
 export function registerIpcHandlers(panel: BrowserWindow): void {
