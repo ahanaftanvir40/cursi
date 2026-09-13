@@ -1,9 +1,12 @@
 import { app, BrowserWindow } from 'electron';
 import { registerShortcut } from './shortcuts';
-import { createAIPanel, getAIPanel } from './windows';
+import { createAIPanel, getAIPanel, showAIPanel } from './windows';
 import { registerIpcHandlers } from './ipc';
 import { setupTray } from './tray';
 import { setupAppLifecycle } from './app-lifecycle';
+
+// Set the app name early so macOS shows "Open Cursi?" instead of "Open Electron?"
+app.name = 'Cursi';
 
 // Register cursi:// as the default protocol client for deep links
 // This enables magic link auth: cursi://auth/callback#access_token=...
@@ -26,14 +29,26 @@ app.on('web-contents-created', (_event, contents) => {
 });
 
 /**
- * Handle a deep link URL by forwarding it to the renderer.
- * The renderer's authStore will extract tokens and set the session.
+ * Handle a deep link URL by forwarding it to the renderer and showing the panel.
+ * The renderer's authStore will extract tokens and set the Supabase session.
  */
 function handleDeepLink(url: string): void {
   const panel = getAIPanel();
   if (!panel) return;
   console.log('[deep-link] Received:', url);
-  panel.webContents.send('auth:deep-link', url);
+
+  const send = () => {
+    panel.webContents.send('auth:deep-link', url);
+    // Show the panel so the user sees they are logged in
+    showAIPanel();
+  };
+
+  // If the renderer hasn't loaded yet, wait for it
+  if (panel.webContents.isLoading()) {
+    panel.webContents.once('did-finish-load', send);
+  } else {
+    send();
+  }
 }
 
 // macOS: deep link arrives via 'open-url' event (app may already be running)
@@ -58,13 +73,10 @@ app.whenReady().then(async () => {
   // macOS-specific lifecycle hooks
   setupAppLifecycle(panel);
 
-  // Handle deep link if app was launched via cursi:// URL (cold start)
-  // On macOS the URL is in process.argv when launched from protocol
+  // Handle deep link if app was launched via cursi:// URL (cold start on Windows/Linux)
+  // On macOS deep links always come via 'open-url', but Windows sends them in argv
   const deepLinkUrl = process.argv.find((arg) => arg.startsWith('cursi://'));
   if (deepLinkUrl) {
-    // Wait for renderer to be ready before sending
-    panel.webContents.once('did-finish-load', () => {
-      handleDeepLink(deepLinkUrl);
-    });
+    handleDeepLink(deepLinkUrl);
   }
 });
