@@ -7,76 +7,99 @@ import { chatRoutes } from './routes/chat.js';
 import { conversationRoutes } from './routes/conversations.js';
 import { userRoutes } from './routes/users.js';
 
-const PORT = Number(process.env['PORT'] ?? 3001);
 const isDev = process.env['NODE_ENV'] !== 'production';
 
-const fastify = Fastify({
-  logger: {
-    level: isDev ? 'debug' : 'info',
-    ...(isDev && {
-      transport: {
-        target: 'pino-pretty',
-        options: { colorize: true },
-      },
-    }),
-  },
-});
+export async function buildApp() {
+  const fastify = Fastify({
+    logger: {
+      level: isDev ? 'debug' : 'info',
+      ...(isDev && {
+        transport: {
+          target: 'pino-pretty',
+          options: { colorize: true },
+        },
+      }),
+    },
+  });
 
-// ─── Plugins ──────────────────────────────────────────────────────────────────
+  // ─── Plugins ──────────────────────────────────────────────────────────────
 
-await fastify.register(cors, {
-  origin: (origin, cb) => {
-    // Allow requests with no origin: packaged Electron (file://), curl, mobile
-    if (!origin) return cb(null, true);
+  await fastify.register(cors, {
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
 
-    const allowed = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'app://cursi',
-      'file://',         // packaged Electron renderer
-    ];
+      const allowed = [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'app://cursi',
+        'file://',
+      ];
 
-    if (allowed.some((a) => origin.startsWith(a))) return cb(null, true);
-    if (isDev) return cb(null, true); // allow everything in dev
+      if (allowed.some((a) => origin.startsWith(a))) return cb(null, true);
+      if (isDev) return cb(null, true);
 
-    cb(new Error(`CORS: origin '${origin}' not allowed`), false);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-});
+      cb(new Error(`CORS: origin '${origin}' not allowed`), false);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
-await fastify.register(rateLimitPlugin);
-await fastify.register(authPlugin);
+  await fastify.register(rateLimitPlugin);
+  await fastify.register(authPlugin);
 
-// ─── Routes ───────────────────────────────────────────────────────────────────
+  // ─── Routes ───────────────────────────────────────────────────────────────
 
-fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
+  fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
 
-await fastify.register(chatRoutes);
-await fastify.register(conversationRoutes);
-await fastify.register(userRoutes);
+  await fastify.register(chatRoutes);
+  await fastify.register(conversationRoutes);
+  await fastify.register(userRoutes);
 
-// ─── Start ────────────────────────────────────────────────────────────────────
+  return fastify;
+}
 
-const start = async () => {
+// ─── Vercel entry point ───────────────────────────────────────────────────────
+// Vercel imports this file and calls the default export as a Node.js handler.
+
+import type { IncomingMessage, ServerResponse } from 'http';
+
+let _app: Awaited<ReturnType<typeof buildApp>> | null = null;
+
+async function getApp() {
+  if (!_app) {
+    _app = await buildApp();
+    await _app.ready();
+  }
+  return _app;
+}
+
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  const app = await getApp();
+  app.server.emit('request', req, res);
+}
+
+// ─── Local dev: start listening ───────────────────────────────────────────────
+
+if (process.env['VERCEL'] !== '1') {
+  const PORT = Number(process.env['PORT'] ?? 3001);
+
+  const app = await buildApp();
+
+  const shutdown = async (signal: string) => {
+    app.log.info(`Received ${signal}, shutting down`);
+    await app.close();
+    process.exit(0);
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+
   try {
-    await fastify.listen({ port: PORT, host: '0.0.0.0' });
-    fastify.log.info(`Cursi API listening on port ${PORT}`);
+    await app.listen({ port: PORT, host: '0.0.0.0' });
+    app.log.info(`Cursi API listening on port ${PORT}`);
   } catch (err) {
-    fastify.log.error(err);
+    app.log.error(err);
     process.exit(1);
   }
-};
-
-// Graceful shutdown
-const shutdown = async (signal: string) => {
-  fastify.log.info(`Received ${signal}, shutting down gracefully`);
-  await fastify.close();
-  process.exit(0);
-};
-
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
-
-await start();
+}
