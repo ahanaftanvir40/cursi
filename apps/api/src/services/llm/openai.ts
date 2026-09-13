@@ -1,8 +1,8 @@
-import OpenAILib from 'openai';
+import { OpenAI } from 'openai';
 import type { LLMProvider, LLMMessage, LLMOptions } from '@cursi/shared';
 
 export class OpenAIProvider implements LLMProvider {
-  private readonly client: InstanceType<typeof OpenAILib>;
+  private readonly client: OpenAI;
   private readonly defaultModel: string;
 
   constructor() {
@@ -11,7 +11,7 @@ export class OpenAIProvider implements LLMProvider {
       throw new Error('OPENAI_API_KEY is required');
     }
 
-    this.client = new OpenAILib({ apiKey });
+    this.client = new OpenAI({ apiKey });
     this.defaultModel = process.env['OPENAI_MODEL'] ?? 'gpt-4o';
   }
 
