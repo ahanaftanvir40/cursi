@@ -33,6 +33,7 @@ export async function buildApp() {
         'http://localhost:3000',
         'app://cursi',
         'file://',
+        'https://cursi-api-4cfo.vercel.app',
       ];
 
       if (allowed.some((a) => origin.startsWith(a))) return cb(null, true);
