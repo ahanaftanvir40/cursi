@@ -83,6 +83,8 @@ export async function createAIPanel(): Promise<BrowserWindow> {
       sandbox: false,
       // In dev, disable web security so localhost:5173 can call localhost:3001
       webSecurity: !process.env['ELECTRON_RENDERER_URL'],
+      // Throttle timers/animations when window is hidden — saves CPU & battery
+      backgroundThrottling: true,
     },
 
     // Start hidden — shown on shortcut

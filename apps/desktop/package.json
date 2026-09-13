@@ -65,7 +65,8 @@
     },
     "dmg": {
       "title": "Cursi",
-      "window": { "width": 540, "height": 380 }
+      "window": { "width": 540, "height": 380 },
+      "writeUpdateInfo": false
     },
     "win": {
       "target": [
