@@ -55,6 +55,15 @@ const desktopApi = {
     ipcRenderer.on('navigate', handler);
     return () => ipcRenderer.removeListener('navigate', handler);
   },
+
+  // Deep link handler — receives cursi://auth/callback#access_token=... URLs
+  onDeepLink: (callback: (url: string) => void): (() => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, url: string) => {
+      callback(url);
+    };
+    ipcRenderer.on('auth:deep-link', handler);
+    return () => ipcRenderer.removeListener('auth:deep-link', handler);
+  },
 };
 
 contextBridge.exposeInMainWorld('desktop', desktopApi);

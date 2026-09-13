@@ -5,6 +5,17 @@ import { registerIpcHandlers } from './ipc';
 import { setupTray } from './tray';
 import { setupAppLifecycle } from './app-lifecycle';
 
+// Register cursi:// as the default protocol client for deep links
+// This enables magic link auth: cursi://auth/callback#access_token=...
+if (process.defaultApp) {
+  // In dev (electron .), argv[2] is the URL
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('cursi', process.execPath, [process.argv[1] ?? '']);
+  }
+} else {
+  app.setAsDefaultProtocolClient('cursi');
+}
+
 // Security: disable navigation to untrusted origins
 app.on('web-contents-created', (_event, contents) => {
   contents.on('will-navigate', (event, url) => {
@@ -12,6 +23,23 @@ app.on('web-contents-created', (_event, contents) => {
       event.preventDefault();
     }
   });
+});
+
+/**
+ * Handle a deep link URL by forwarding it to the renderer.
+ * The renderer's authStore will extract tokens and set the session.
+ */
+function handleDeepLink(url: string): void {
+  const panel = getAIPanel();
+  if (!panel) return;
+  console.log('[deep-link] Received:', url);
+  panel.webContents.send('auth:deep-link', url);
+}
+
+// macOS: deep link arrives via 'open-url' event (app may already be running)
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  handleDeepLink(url);
 });
 
 app.whenReady().then(async () => {
@@ -29,4 +57,14 @@ app.whenReady().then(async () => {
 
   // macOS-specific lifecycle hooks
   setupAppLifecycle(panel);
+
+  // Handle deep link if app was launched via cursi:// URL (cold start)
+  // On macOS the URL is in process.argv when launched from protocol
+  const deepLinkUrl = process.argv.find((arg) => arg.startsWith('cursi://'));
+  if (deepLinkUrl) {
+    // Wait for renderer to be ready before sending
+    panel.webContents.once('did-finish-load', () => {
+      handleDeepLink(deepLinkUrl);
+    });
+  }
 });

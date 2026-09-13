@@ -43,6 +43,13 @@
     "appId": "com.cursi.app",
     "productName": "Cursi",
     "copyright": "Copyright 2026 Cursi",
+    "protocols": [
+      {
+        "name": "Cursi",
+        "schemes": ["cursi"],
+        "role": "Viewer"
+      }
+    ],
     "directories": {
       "buildResources": "resources",
       "output": "dist"
