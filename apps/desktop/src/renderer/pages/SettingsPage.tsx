@@ -96,10 +96,9 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
   };
 
   return (
-    <div
-      ref={rootRef}
-      className="cursi-panel flex flex-col rounded-xl overflow-hidden"
-    >
+    // Outer wrapper — no overflow constraint so scrollHeight = true full height
+    <div ref={rootRef}>
+      <div className="cursi-panel flex flex-col rounded-xl">
       {/* Header */}
       <div
         className="drag-region flex items-center gap-2 px-3 py-2 shrink-0"
@@ -124,8 +123,8 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
         <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Settings</span>
       </div>
 
-      {/* Scrollable content */}
-      <div className="overflow-y-auto px-4 py-4 space-y-6" style={{ overscrollBehavior: 'contain', maxHeight: 'calc(100vh - 40px)' }}>
+      {/* Content — not scrollable, window grows to fit via IPC */}
+      <div className="px-4 py-4 space-y-6">
 
         {/* Theme */}
         <section>
@@ -292,6 +291,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
             Sign out
           </button>
         </section>
+      </div>
       </div>
     </div>
   );

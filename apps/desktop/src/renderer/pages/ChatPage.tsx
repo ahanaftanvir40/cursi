@@ -159,8 +159,8 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
   const hasMessages = messages.length > 0;
 
   return (
+    <div ref={rootRef}>
     <div
-      ref={rootRef}
       className="cursi-panel flex flex-col rounded-xl overflow-hidden"
     >
       {/* ── Top bar: always visible ── */}
@@ -338,6 +338,7 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
         isStreaming={isStreaming}
         hasContext={hasInitialContext || hasNewContext}
       />
+    </div>
     </div>
   );
 }

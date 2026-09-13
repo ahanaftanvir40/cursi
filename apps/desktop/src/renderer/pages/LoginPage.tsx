@@ -55,9 +55,9 @@ export function LoginPage(): React.ReactElement {
   };
 
   return (
+    <div ref={rootRef}>
     <div
-      ref={rootRef}
-      className="cursi-panel flex flex-col rounded-2xl overflow-hidden"
+      className="cursi-panel flex flex-col rounded-2xl"
     >
       {/* Drag region */}
       <div className="drag-region h-6 shrink-0" />
@@ -187,6 +187,7 @@ export function LoginPage(): React.ReactElement {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
