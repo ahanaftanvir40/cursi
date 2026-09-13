@@ -15,6 +15,25 @@ export class OpenAIProvider implements LLMProvider {
     this.defaultModel = process.env['OPENAI_MODEL'] ?? 'gpt-4o';
   }
 
+  async chat(
+    messages: LLMMessage[],
+    options?: LLMOptions,
+  ): Promise<string> {
+    const completion = await this.client.chat.completions.create({
+      model: options?.model ?? this.defaultModel,
+      messages: messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+      temperature: options?.temperature ?? 0.7,
+      max_tokens: options?.maxTokens ?? 4096,
+      stream: false,
+    });
+
+    return completion.choices[0]?.message?.content ?? '';
+  }
+
+  // Keep streamChat for potential future use
   async *streamChat(
     messages: LLMMessage[],
     options?: LLMOptions,

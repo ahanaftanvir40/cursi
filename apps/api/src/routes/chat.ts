@@ -23,49 +23,19 @@ export const chatRoutes: FastifyPluginAsync = async (fastify) => {
     if (conversationId !== undefined) chatParams.conversationId = conversationId;
     if (context !== undefined) chatParams.context = context;
 
-    let result;
     try {
-      result = await startChat(chatParams);
+      const result = await startChat(chatParams);
+      return reply.code(200).send({
+        reply: result.reply,
+        conversationId: result.conversationId,
+        userMessageId: result.userMessageId,
+        messageId: result.assistantMessageId,
+      });
     } catch (err: unknown) {
       const statusCode = (err as { statusCode?: number }).statusCode ?? 500;
       const message = err instanceof Error ? err.message : 'Internal server error';
       fastify.log.error({ err, statusCode }, '[chat] startChat failed');
       return reply.code(statusCode).send({ error: message, statusCode });
-    }
-
-    // Server-Sent Events streaming response
-    reply.raw.setHeader('Content-Type', 'text/event-stream');
-    reply.raw.setHeader('Cache-Control', 'no-cache');
-    reply.raw.setHeader('Connection', 'keep-alive');
-    reply.raw.setHeader('X-Conversation-Id', result.conversationId);
-    reply.raw.flushHeaders();
-
-    let fullContent = '';
-
-    const sendEvent = (data: object) => {
-      reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
-    };
-
-    try {
-      for await (const delta of result.stream) {
-        fullContent += delta;
-        sendEvent({ type: 'delta', delta, conversationId: result.conversationId });
-      }
-
-      const { assistantMessageId } = await result.onComplete(fullContent);
-
-      sendEvent({
-        type: 'done',
-        conversationId: result.conversationId,
-        userMessageId: result.userMessageId,
-        messageId: assistantMessageId,
-      });
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      fastify.log.error({ err, errMsg }, '[chat] Streaming error');
-      sendEvent({ type: 'error', error: errMsg });
-    } finally {
-      reply.raw.end();
     }
   });
 };

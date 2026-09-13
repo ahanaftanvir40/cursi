@@ -60,6 +60,10 @@ export interface LLMOptions {
 }
 
 export interface LLMProvider {
+  chat(
+    messages: LLMMessage[],
+    options?: LLMOptions,
+  ): Promise<string>;
   streamChat(
     messages: LLMMessage[],
     options?: LLMOptions,

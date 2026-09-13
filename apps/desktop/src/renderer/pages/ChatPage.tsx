@@ -42,12 +42,12 @@ const SUGGESTIONS: Suggestion[] = [
   },
   {
     label: 'Write reply',
-    prompt: 'Write a reply to this Slack message in a natural, human tone. Do not use em dashes (—). Keep it conversational and friendly.',
+    prompt: 'Write a short reply to this message in a natural, human tone. Rules: no em dashes (—), no bullet points, no greetings like "Hi" or "Hey", no sign-offs. Write it as a single block of plain conversational text, like a real person typing in Slack. Output only the reply text, nothing else.',
     autoSubmit: true,
   },
   {
     label: 'Make professional',
-    prompt: 'Rewrite this Slack message to be more professional but still human and approachable. Do not use em dashes (—). Keep it concise.',
+    prompt: 'Rewrite the following as a short, professional Slack message. Rules: no em dashes (—), no bullet points, no "Dear" or email-style greetings, no sign-offs or signatures. Keep it concise, direct, and human — like a message from a confident professional, not a formal email. Output only the rewritten message text, nothing else.',
     autoSubmit: true,
   },
 ];

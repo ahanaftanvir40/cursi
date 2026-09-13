@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChatPage } from './pages/ChatPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
@@ -8,7 +8,8 @@ type Route = '/chat' | '/settings';
 
 export default function App(): React.ReactElement {
   const { session, loading, initialized, initialize } = useAuthStore();
-  const [route, setRoute] = React.useState<Route>('/chat');
+  const [route, setRoute] = useState<Route>('/chat');
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Bootstrap auth on mount
   useEffect(() => {
@@ -16,6 +17,26 @@ export default function App(): React.ReactElement {
     initialize().then((unsub) => { cleanup = unsub; });
     return () => cleanup?.();
   }, [initialize]);
+
+  // Trigger entrance animation on every shortcut invoke
+  useEffect(() => {
+    if (!window.desktop?.onShortcutTriggered) return;
+    const cleanup = window.desktop.onShortcutTriggered(() => {
+      const el = wrapperRef.current;
+      if (!el) return;
+      // Remove animation class, force reflow, re-add — no remount needed
+      el.classList.remove('cursi-enter');
+      el.classList.add('cursi-hidden');
+      // Two rAFs: first paints the hidden state, second starts the animation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.classList.remove('cursi-hidden');
+          el.classList.add('cursi-enter');
+        });
+      });
+    });
+    return cleanup;
+  }, []);
 
   // Listen for navigation events from the main process (e.g. tray menu)
   useEffect(() => {
@@ -49,20 +70,29 @@ export default function App(): React.ReactElement {
     );
   }
 
+  let content: React.ReactElement;
+
   // Not logged in → show login
   if (!session) {
-    return <LoginPage />;
-  }
-
-  // Logged in → main app
-  switch (route) {
-    case '/chat':
-      return <ChatPage onNavigate={setRoute} />;
-    case '/settings':
-      return <SettingsPage onNavigate={setRoute} />;
-    default: {
-      const _exhaustive: never = route;
-      return <ChatPage onNavigate={setRoute} />;
+    content = <LoginPage />;
+  } else {
+    switch (route) {
+      case '/chat':
+        content = <ChatPage onNavigate={setRoute} />;
+        break;
+      case '/settings':
+        content = <SettingsPage onNavigate={setRoute} />;
+        break;
+      default: {
+        const _exhaustive: never = route;
+        content = <ChatPage onNavigate={setRoute} />;
+      }
     }
   }
+
+  return (
+    <div ref={wrapperRef} className="cursi-enter">
+      {content}
+    </div>
+  );
 }

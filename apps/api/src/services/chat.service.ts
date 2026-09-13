@@ -19,8 +19,8 @@ export interface ChatParams {
 export interface ChatResult {
   conversationId: string;
   userMessageId: string;
-  stream: AsyncIterable<string>;
-  onComplete: (fullContent: string) => Promise<{ assistantMessageId: string }>;
+  assistantMessageId: string;
+  reply: string;
 }
 
 export async function startChat(params: ChatParams): Promise<ChatResult> {
@@ -40,7 +40,6 @@ export async function startChat(params: ChatParams): Promise<ChatResult> {
     }
     history = conv.messages.map((m) => ({ role: m.role, content: m.content }));
   } else {
-    // Auto-title from first 60 chars of the message
     const title = message.slice(0, 60) + (message.length > 60 ? '…' : '');
     const conv = await createConversation(userId, title);
     conversationId = conv.id;
@@ -61,31 +60,31 @@ export async function startChat(params: ChatParams): Promise<ChatResult> {
     content: message,
   });
 
+  // Get full response (no streaming)
   const provider = getLLMProvider();
-  const stream = provider.streamChat(llmMessages);
+  const reply = await provider.chat(llmMessages);
 
-  const onComplete = async (fullContent: string) => {
-    const assistantMsg = await saveMessage({
-      conversationId: conversationId!,
-      role: 'assistant',
-      content: fullContent,
-      model: process.env['OPENAI_MODEL'] ?? 'gpt-4o',
-    });
-    await touchConversation(conversationId!);
-    return { assistantMessageId: assistantMsg.id };
-  };
+  // Persist assistant message
+  const assistantMsg = await saveMessage({
+    conversationId,
+    role: 'assistant',
+    content: reply,
+    model: process.env['OPENAI_MODEL'] ?? 'gpt-4o',
+  });
+
+  await touchConversation(conversationId);
 
   return {
     conversationId,
     userMessageId: userMsg.id,
-    stream,
-    onComplete,
+    assistantMessageId: assistantMsg.id,
+    reply,
   };
 }
 
 function buildSystemPrompt(context?: AIContext): string {
   const lines = [
-    'You are Cursi, a helpful AI assistant embedded in the user\'s desktop.',
+    "You are Cursi, a helpful AI assistant embedded in the user's desktop.",
     'Be concise, clear, and direct. Avoid unnecessary preamble.',
   ];
 

@@ -15,20 +15,20 @@ export function useChat() {
 
       store.setError(null);
       store.setStreaming(true);
-      // Snapshot whatever context is active right now for inline display in the thread
-      const activeContext = context ?? store.context;
-      const contextSnapshot = activeContext?.type === 'clipboard'
-        ? activeContext.clipboardText
+
+      // Snapshot active context for inline display in the thread (UI only)
+      const snapshotCtx = context ?? store.context;
+      const contextSnapshot = snapshotCtx?.type === 'clipboard'
+        ? snapshotCtx.clipboardText
         : undefined;
       store.addUserMessage(message, contextSnapshot);
       const assistantId = store.startAssistantMessage();
 
       try {
-        const body = JSON.stringify({
-          message,
-          conversationId: store.conversationId ?? undefined,
-          context: context ?? store.context ?? undefined,
-        });
+        // Only send context on the first message of a new conversation.
+        // On follow-ups the backend loads history from DB which already has the context framing.
+        const isFirstMessage = !store.conversationId;
+        const activeContext = isFirstMessage ? (context ?? store.context ?? undefined) : undefined;
 
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (session?.access_token) {
@@ -38,47 +38,32 @@ export function useChat() {
         const response = await fetch(`${API_URL}/v1/chat`, {
           method: 'POST',
           headers,
-          body,
+          body: JSON.stringify({
+            message,
+            conversationId: store.conversationId ?? undefined,
+            context: activeContext,
+          }),
         });
 
-        if (!response.ok || !response.body) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({})) as { error?: string };
+          throw new Error(err.error ?? `HTTP ${response.status}`);
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
+        const data = await response.json() as {
+          reply: string;
+          conversationId: string;
+          userMessageId: string;
+          messageId: string;
+        };
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const text = decoder.decode(value, { stream: true });
-          // Parse SSE lines: "data: {...}\n\n"
-          for (const line of text.split('\n')) {
-            if (!line.startsWith('data: ')) continue;
-            const raw = line.slice(6).trim();
-            if (!raw) continue;
-
-            let event: Record<string, unknown>;
-            try {
-              event = JSON.parse(raw) as Record<string, unknown>;
-            } catch {
-              continue;
-            }
-
-            const type = event['type'];
-            if (type === 'delta') {
-              store.appendToLastMessage(event['delta'] as string);
-            } else if (type === 'done') {
-              if (event['conversationId'] && !store.conversationId) {
-                store.setConversationId(event['conversationId'] as string);
-              }
-              store.finalizeLastMessage(assistantId);
-            } else if (type === 'error') {
-              throw new Error(event['error'] as string ?? 'Streaming error');
-            }
-          }
+        // Set conversationId so follow-up messages continue the same thread
+        if (data.conversationId && !store.conversationId) {
+          store.setConversationId(data.conversationId);
         }
+
+        store.appendToLastMessage(data.reply);
+        store.finalizeLastMessage(assistantId);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error';
         store.setError(msg);
@@ -87,7 +72,7 @@ export function useChat() {
         store.setStreaming(false);
       }
     },
-    [store],
+    [store, session],
   );
 
   return {

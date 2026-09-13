@@ -44,3 +44,27 @@ html, body, #root {
 pre, code {
   font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
 }
+
+/* Panel entrance animation */
+@keyframes cursi-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.cursi-enter {
+  will-change: transform, opacity;
+  animation: cursi-enter 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Reset state — invisible, ready to animate in */
+.cursi-hidden {
+  opacity: 0;
+  transform: scale(0.96) translateY(-3px);
+  will-change: transform, opacity;
+}
