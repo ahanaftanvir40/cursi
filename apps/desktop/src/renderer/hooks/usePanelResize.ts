@@ -11,8 +11,10 @@ export function usePanelResize(ref: React.RefObject<HTMLElement | null>): void {
   useEffect(() => {
     const measure = () => {
       if (!ref.current || !window.desktop?.resizePanel) return;
-      // Use offsetHeight — includes borders, reflects actual rendered height
-      const h = Math.max(ref.current.offsetHeight, 52);
+      // scrollHeight = full content height regardless of any CSS max-height
+      // offsetHeight = visible height (clipped by CSS). Use scrollHeight so the
+      // IPC handler (not CSS) is the single source of truth for the cap.
+      const h = Math.max(ref.current.scrollHeight, 52);
       void window.desktop.resizePanel(h);
     };
 

@@ -99,7 +99,6 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
     <div
       ref={rootRef}
       className="cursi-panel flex flex-col rounded-xl overflow-hidden"
-      style={{ maxHeight: 680 }}
     >
       {/* Header */}
       <div
@@ -125,8 +124,8 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
         <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>Settings</span>
       </div>
 
-      {/* Scrollable content — never clips */}
-      <div className="overflow-y-auto px-4 py-4 space-y-6" style={{ overscrollBehavior: 'contain' }}>
+      {/* Scrollable content */}
+      <div className="overflow-y-auto px-4 py-4 space-y-6" style={{ overscrollBehavior: 'contain', maxHeight: 'calc(100vh - 40px)' }}>
 
         {/* Theme */}
         <section>
