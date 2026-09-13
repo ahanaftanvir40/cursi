@@ -22,8 +22,8 @@ const THEMES: ThemeMeta[] = [
   {
     id: 'stealth',
     label: 'Stealth',
-    desc: 'Dark, purple-tinted',
-    swatch: ['#14121a', '#8b5cf6', 'rgba(235,228,255,0.85)'],
+    desc: 'Black, purple accent',
+    swatch: ['#0d0d0f', '#8b5cf6', 'rgba(245,243,255,0.85)'],
   },
   {
     id: 'aurora',
