@@ -218,14 +218,14 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
               </svg>
               <div className="flex-1 min-w-0">
                 {!contextExpanded && (
-                  <span className="block text-[12px] truncate font-mono leading-snug" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                  <span className="block text-[12px] truncate font-mono leading-snug" style={{ color: 'var(--context-text)' }}>
                     {isLong ? ctxText.slice(0, 55) + '…' : ctxText}
                   </span>
                 )}
                 {contextExpanded && (
                   <span
                     className="block text-[12px] font-mono leading-relaxed whitespace-pre-wrap break-words"
-                    style={{ maxHeight: 88, overflowY: 'auto', color: 'rgba(255,255,255,0.85)' }}
+                    style={{ maxHeight: 88, overflowY: 'auto', color: 'var(--context-text-expanded)' }}
                   >
                     {ctxText}
                   </span>

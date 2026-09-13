@@ -5,22 +5,43 @@ import { useSettingsStore } from '../stores/settingsStore';
 import type { Theme } from '../stores/settingsStore';
 import { usePanelResize } from '../hooks/usePanelResize';
 
+
 interface SettingsPageProps {
   onNavigate: (route: '/chat' | '/settings') => void;
 }
 
-const THEMES: { id: Theme; label: string; desc: string; accent: string }[] = [
+interface ThemeMeta {
+  id: Theme;
+  label: string;
+  desc: string;
+  /** Swatch: [bg, accent, text] */
+  swatch: [string, string, string];
+}
+
+const THEMES: ThemeMeta[] = [
   {
     id: 'stealth',
     label: 'Stealth',
-    desc: 'Pure black, no distractions',
-    accent: '#8b5cf6',
+    desc: 'Dark, purple-tinted',
+    swatch: ['#14121a', '#8b5cf6', 'rgba(235,228,255,0.85)'],
   },
   {
     id: 'aurora',
     label: 'Aurora',
-    desc: 'Dark with emerald accents',
-    accent: '#34d399',
+    desc: 'Dark with emerald',
+    swatch: ['#101016', '#34d399', 'rgba(255,255,255,0.85)'],
+  },
+  {
+    id: 'chalk',
+    label: 'Chalk',
+    desc: 'Light, ink on paper',
+    swatch: ['#f6f4f0', '#2563eb', 'rgba(18,16,12,0.88)'],
+  },
+  {
+    id: 'amber',
+    label: 'Amber',
+    desc: 'Retro terminal',
+    swatch: ['#110e09', '#f59e0b', 'rgba(255,220,140,0.90)'],
   },
 ];
 
@@ -100,30 +121,60 @@ export function SettingsPage({ onNavigate }: SettingsPageProps): React.ReactElem
           <h2 className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
             Theme
           </h2>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {THEMES.map((t) => {
+              const [swBg, swAccent, swText] = t.swatch;
               const active = theme === t.id;
               return (
                 <button
                   key={t.id}
                   onClick={() => setTheme(t.id)}
-                  className="flex-1 flex flex-col items-start gap-1.5 rounded-xl px-3 py-2.5 transition-all duration-150"
+                  className="flex flex-col gap-2 rounded-xl p-2.5 transition-all duration-150 text-left"
                   style={{
-                    background: active ? `${t.accent}18` : 'var(--input-bg)',
-                    border: `1px solid ${active ? t.accent + '55' : 'var(--border)'}`,
+                    background: 'var(--input-bg)',
+                    border: `1px solid ${active ? swAccent + '80' : 'var(--border)'}`,
+                    outline: active ? `2px solid ${swAccent}30` : 'none',
                   }}
                 >
-                  {/* Colour dot */}
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: t.accent, boxShadow: active ? `0 0 6px ${t.accent}99` : 'none' }}
-                  />
-                  <span className="text-[12px] font-medium" style={{ color: active ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                    {t.label}
-                  </span>
-                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    {t.desc}
-                  </span>
+                  {/* Mini panel preview */}
+                  <div
+                    className="w-full rounded-lg overflow-hidden flex flex-col gap-1 p-2"
+                    style={{ background: swBg, height: 44 }}
+                  >
+                    {/* Fake title bar */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[7px] font-bold tracking-widest" style={{ color: swAccent, opacity: 0.9 }}>CURSI</span>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: swAccent, opacity: 0.5 }} />
+                    </div>
+                    {/* Fake input bar */}
+                    <div
+                      className="rounded mt-0.5 px-1.5 flex items-center"
+                      style={{ background: `${swAccent}12`, height: 14, border: `0.5px solid ${swAccent}25` }}
+                    >
+                      <span className="text-[6px] leading-none" style={{ color: swText, opacity: 0.45 }}>Ask anything…</span>
+                    </div>
+                  </div>
+
+                  {/* Label row */}
+                  <div className="flex items-center justify-between px-0.5">
+                    <div>
+                      <p className="text-[12px] font-medium leading-none" style={{ color: active ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                        {t.label}
+                      </p>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t.desc}</p>
+                    </div>
+                    {/* Active checkmark */}
+                    {active && (
+                      <span
+                        className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                        style={{ background: swAccent }}
+                      >
+                        <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="1.5,5 4,7.5 8.5,2.5" />
+                        </svg>
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}

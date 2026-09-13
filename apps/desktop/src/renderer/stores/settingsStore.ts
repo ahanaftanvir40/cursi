@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 const STORAGE_KEY = 'cursi:settings';
 
-export type Theme = 'stealth' | 'aurora';
+export type Theme = 'stealth' | 'aurora' | 'chalk' | 'amber';
 
 interface PersistedSettings {
   freshSessionOnInvoke: boolean;

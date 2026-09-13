@@ -28,8 +28,8 @@ export function MessageList({ messages, isStreaming }: MessageListProps): React.
           <React.Fragment key={msg.id}>
             {showContextChip && (
               <div className="flex justify-end">
-                <span className="flex items-center gap-1 text-[11px] text-white/25 font-mono max-w-[86%] truncate">
-                  <span className="w-1 h-1 rounded-full bg-cursi-400/40 shrink-0" />
+                <span className="flex items-center gap-1 text-[11px] font-mono max-w-[86%] truncate" style={{ color: 'var(--text-muted)' }}>
+                  <span className="w-1 h-1 rounded-full shrink-0" style={{ background: 'var(--accent)', opacity: 0.4 }} />
                   {msg.contextSnapshot!.length > 40
                     ? msg.contextSnapshot!.slice(0, 40) + '…'
                     : msg.contextSnapshot}
@@ -42,9 +42,9 @@ export function MessageList({ messages, isStreaming }: MessageListProps): React.
       })}
       {isStreaming && (
         <div className="flex items-center gap-1 px-1 py-1">
-          <span className="w-1 h-1 rounded-full bg-white/30 animate-bounce [animation-delay:0ms]" />
-          <span className="w-1 h-1 rounded-full bg-white/30 animate-bounce [animation-delay:100ms]" />
-          <span className="w-1 h-1 rounded-full bg-white/30 animate-bounce [animation-delay:200ms]" />
+          <span className="streaming-dot w-1 h-1 rounded-full animate-bounce [animation-delay:0ms]" style={{ background: 'var(--text-muted)' }} />
+          <span className="streaming-dot w-1 h-1 rounded-full animate-bounce [animation-delay:100ms]" style={{ background: 'var(--text-muted)' }} />
+          <span className="streaming-dot w-1 h-1 rounded-full animate-bounce [animation-delay:200ms]" style={{ background: 'var(--text-muted)' }} />
         </div>
       )}
       <div ref={bottomRef} />
@@ -59,7 +59,7 @@ function MessageBubble({ message }: { message: ChatMessage }): React.ReactElemen
       <div
         className={`max-w-[86%] rounded-xl px-3 py-2 text-[14px] leading-relaxed selectable`}
         style={isUser
-          ? { background: 'var(--accent)', color: 'white' }
+          ? { background: 'var(--accent)', color: 'var(--user-bubble-text)' }
           : { color: 'var(--text-primary)' }
         }
       >
@@ -80,14 +80,14 @@ function MessageContent({ content }: { content: string }): React.ReactElement {
         if (part.startsWith('```') && part.endsWith('```')) {
           const code = part.slice(3, -3).replace(/^\w+\n/, '');
           return (
-            <pre key={i} className="mt-1.5 mb-0.5 rounded-lg bg-black/30 p-2 text-[12px] overflow-x-auto font-mono">
+            <pre key={i} className="mt-1.5 mb-0.5 rounded-lg p-2 text-[12px] overflow-x-auto font-mono" style={{ background: 'var(--input-bg)' }}>
               <code>{code}</code>
             </pre>
           );
         }
         if (part.startsWith('`') && part.endsWith('`')) {
           return (
-            <code key={i} className="mx-0.5 rounded bg-black/25 px-1 py-px text-[12px] font-mono">
+            <code key={i} className="mx-0.5 rounded px-1 py-px text-[12px] font-mono" style={{ background: 'var(--input-bg)' }}>
               {part.slice(1, -1)}
             </code>
           );

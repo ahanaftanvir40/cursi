@@ -82,6 +82,9 @@ pre, code {
   --text-muted: rgba(180,165,255,0.28);
   --border: rgba(139,92,246,0.12);
   --input-bg: rgba(139,92,246,0.06);
+  --context-text: rgba(255,255,255,0.80);
+  --context-text-expanded: rgba(255,255,255,0.88);
+  --user-bubble-text: white;
 }
 
 .theme-stealth {
@@ -94,9 +97,12 @@ pre, code {
   --text-muted: rgba(180,165,255,0.28);
   --border: rgba(139,92,246,0.12);
   --input-bg: rgba(139,92,246,0.06);
+  --context-text: rgba(255,255,255,0.80);
+  --context-text-expanded: rgba(255,255,255,0.88);
+  --user-bubble-text: white;
 }
 
-/* Aurora: same dark bg, coloured accents */
+/* Aurora: dark bg, emerald accents */
 .theme-aurora {
   --panel-bg: rgba(16, 16, 22, 0.97);
   --panel-shadow: 0 8px 40px rgba(0,0,0,0.75), 0 0 0 0.5px rgba(99,210,190,0.18);
@@ -107,6 +113,52 @@ pre, code {
   --text-muted: rgba(180,255,220,0.28);
   --border: rgba(52,211,153,0.10);
   --input-bg: rgba(52,211,153,0.05);
+  --context-text: rgba(255,255,255,0.80);
+  --context-text-expanded: rgba(255,255,255,0.88);
+  --user-bubble-text: white;
+}
+
+/*
+ * Chalk: off-white light theme — ink on paper
+ * Clean editorial feel, blue-ink accent, legible dark text
+ */
+.theme-chalk {
+  --panel-bg: rgba(247, 245, 242, 0.98);
+  --panel-shadow: 0 8px 40px rgba(0,0,0,0.16), 0 0 0 0.5px rgba(30,20,10,0.09);
+  --accent: #2563eb;
+  --accent-dim: rgba(37,99,235,0.09);
+  --text-primary: rgba(18, 16, 12, 0.90);
+  --text-secondary: rgba(18, 16, 12, 0.52);
+  --text-muted: rgba(18, 16, 12, 0.30);
+  --border: rgba(18, 16, 12, 0.09);
+  --input-bg: rgba(18, 16, 12, 0.04);
+  --context-text: rgba(18, 16, 12, 0.80);
+  --context-text-expanded: rgba(18, 16, 12, 0.88);
+  --user-bubble-text: white;
+}
+
+/* Chalk: invert scrollbar */
+.theme-chalk ::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+}
+
+/*
+ * Amber: retro terminal
+ * Very dark charcoal, warm amber text, monospace feel
+ */
+.theme-amber {
+  --panel-bg: rgba(15, 12, 7, 0.98);
+  --panel-shadow: 0 8px 40px rgba(0,0,0,0.82), 0 0 0 0.5px rgba(245,158,11,0.20);
+  --accent: #f59e0b;
+  --accent-dim: rgba(245,158,11,0.10);
+  --text-primary: rgba(255, 218, 120, 0.92);
+  --text-secondary: rgba(245,158,11,0.58);
+  --text-muted: rgba(245,158,11,0.30);
+  --border: rgba(245,158,11,0.13);
+  --input-bg: rgba(245,158,11,0.05);
+  --context-text: rgba(255, 218, 120, 0.82);
+  --context-text-expanded: rgba(255, 218, 120, 0.92);
+  --user-bubble-text: rgba(15, 12, 7, 1);
 }
 
 /* Panel base — always uses CSS variables (defaults set on :root) */
@@ -120,3 +172,21 @@ textarea::placeholder {
   color: var(--text-muted);
   opacity: 1;
 }
+
+/* Amber: monospace feel for context/input text */
+.theme-amber textarea,
+.theme-amber input {
+  font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 13px;
+}
+
+/* Chalk: code blocks should be dark */
+.theme-chalk pre,
+.theme-chalk code {
+  background: rgba(18, 16, 12, 0.08) !important;
+  color: rgba(18, 16, 12, 0.82);
+}
+
+/* Streaming dots — theme-aware */
+.theme-chalk .streaming-dot { background: rgba(0,0,0,0.3); }
+.theme-amber .streaming-dot { background: rgba(245,158,11,0.5); }
