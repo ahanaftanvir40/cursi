@@ -28,7 +28,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps): React.
           <React.Fragment key={msg.id}>
             {showContextChip && (
               <div className="flex justify-end">
-                <span className="flex items-center gap-1 text-[10px] text-white/25 font-mono max-w-[86%] truncate">
+                <span className="flex items-center gap-1 text-[11px] text-white/25 font-mono max-w-[86%] truncate">
                   <span className="w-1 h-1 rounded-full bg-cursi-400/40 shrink-0" />
                   {msg.contextSnapshot!.length > 40
                     ? msg.contextSnapshot!.slice(0, 40) + '…'
@@ -57,13 +57,11 @@ function MessageBubble({ message }: { message: ChatMessage }): React.ReactElemen
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`
-          max-w-[86%] rounded-xl px-3 py-1.5 text-[13px] leading-snug selectable
-          ${isUser
-            ? 'bg-cursi-500 text-white'
-            : 'text-white/75'
-          }
-        `}
+        className={`max-w-[86%] rounded-xl px-3 py-2 text-[14px] leading-relaxed selectable`}
+        style={isUser
+          ? { background: 'var(--accent)', color: 'white' }
+          : { color: 'var(--text-primary)' }
+        }
       >
         <MessageContent content={message.content} />
         {message.streaming && (
@@ -82,14 +80,14 @@ function MessageContent({ content }: { content: string }): React.ReactElement {
         if (part.startsWith('```') && part.endsWith('```')) {
           const code = part.slice(3, -3).replace(/^\w+\n/, '');
           return (
-            <pre key={i} className="mt-1.5 mb-0.5 rounded-lg bg-black/30 p-2 text-[11px] overflow-x-auto font-mono">
+            <pre key={i} className="mt-1.5 mb-0.5 rounded-lg bg-black/30 p-2 text-[12px] overflow-x-auto font-mono">
               <code>{code}</code>
             </pre>
           );
         }
         if (part.startsWith('`') && part.endsWith('`')) {
           return (
-            <code key={i} className="mx-0.5 rounded bg-black/25 px-1 py-px text-[11px] font-mono">
+            <code key={i} className="mx-0.5 rounded bg-black/25 px-1 py-px text-[12px] font-mono">
               {part.slice(1, -1)}
             </code>
           );

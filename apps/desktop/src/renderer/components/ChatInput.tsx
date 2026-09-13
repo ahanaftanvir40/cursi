@@ -55,7 +55,7 @@ export function ChatInput({
   const canSend = !isStreaming && value.trim().length > 0;
 
   return (
-    <div className="flex items-end gap-2 px-2.5 py-2 no-drag shrink-0">
+    <div className="flex items-end gap-2 px-3 py-2.5 no-drag shrink-0">
       <textarea
         ref={textareaRef}
         value={value}
@@ -66,25 +66,24 @@ export function ChatInput({
         disabled={isStreaming}
         className="
           flex-1 resize-none bg-transparent
-          text-[13px] text-white/85 placeholder-white/22
-          focus:outline-none
-          disabled:opacity-40
-          max-h-[72px] overflow-y-auto selectable leading-snug py-1
+          text-[14px] leading-relaxed selectable py-0.5
+          focus:outline-none disabled:opacity-40
+          max-h-[80px] overflow-y-auto
         "
+        style={{
+          color: 'var(--text-primary)',
+        }}
       />
       <button
         onClick={onSubmit}
         disabled={!canSend}
         aria-label="Send"
-        className={`
-          shrink-0 flex items-center justify-center
-          w-7 h-7 rounded-full mb-0.5
-          transition-all duration-150
-          ${canSend
-            ? 'bg-cursi-500 hover:bg-cursi-400 text-white'
-            : 'bg-white/8 text-white/25 cursor-not-allowed'
-          }
-        `}
+        className="shrink-0 flex items-center justify-center w-7 h-7 rounded-full mb-0.5 transition-all duration-150"
+        style={{
+          background: canSend ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
+          color: canSend ? 'white' : 'rgba(255,255,255,0.25)',
+          cursor: canSend ? 'pointer' : 'not-allowed',
+        }}
       >
         {isStreaming ? (
           <span className="w-2.5 h-2.5 border border-white/40 border-t-white rounded-full animate-spin" />

@@ -54,6 +54,7 @@ const SUGGESTIONS: Suggestion[] = [
 
 export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
   const [input, setInput] = useState('');
+  const [contextExpanded, setContextExpanded] = useState(false);
   const { messages, isStreaming, error, initialContext, context, sendMessage, setInitialContext, setContext, reset } = useChat();
   const { freshSessionOnInvoke } = useSettingsStore();
   // Ref so cursi:submit event handler always sees the latest input + context
@@ -160,23 +161,24 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
   return (
     <div
       ref={rootRef}
-      className="flex flex-col rounded-xl overflow-hidden"
-      style={{ background: 'rgba(22, 22, 26, 0.97)', boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(255,255,255,0.08)' }}
+      className="cursi-panel flex flex-col rounded-xl overflow-hidden"
     >
       {/* ── Top bar: always visible ── */}
       <div className="drag-region flex items-center justify-between px-3 shrink-0" style={{ height: 28 }}>
-        {/* Left: initial context pinned here, or app name when empty */}
-        {hasInitialContext && initialContext ? (
-          <ContextBadge context={initialContext} onDismiss={() => { setInitialContext(null); setContext(null); }} inline />
-        ) : (
-          <span className="text-[10px] font-medium text-white/25 tracking-wide select-none uppercase">Cursi</span>
-        )}
+        {/* Left: always show app name */}
+        <span
+          className="text-[11px] font-semibold select-none uppercase"
+          style={{ color: 'var(--accent)', letterSpacing: '0.15em', opacity: 0.85 }}
+        >Cursi</span>
         {/* Right: actions */}
         <div className="flex items-center gap-0.5 no-drag">
           {(hasMessages || hasInitialContext) && (
             <button
               onClick={reset}
-              className="w-5 h-5 flex items-center justify-center rounded text-white/20 hover:text-white/55 hover:bg-white/6 transition-all"
+              className="w-5 h-5 flex items-center justify-center rounded transition-all"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
               title="New chat"
             >
               <svg viewBox="0 0 10 10" className="w-2 h-2" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
@@ -186,7 +188,10 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
           )}
           <button
             onClick={() => onNavigate('/settings')}
-            className="w-5 h-5 flex items-center justify-center rounded text-white/20 hover:text-white/55 hover:bg-white/6 transition-all"
+            className="w-5 h-5 flex items-center justify-center rounded transition-all"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
             title="Settings"
           >
             <svg viewBox="0 0 10 10" className="w-2 h-2 fill-current" aria-hidden>
@@ -195,8 +200,59 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
           </button>
         </div>
       </div>
-      {/* Separator only when there's content below the header */}
-      {(hasInitialContext || hasMessages) && <div className="h-px bg-white/5 shrink-0" />}
+
+      {/* ── Context row: shown below header when context is active ── */}
+      {hasInitialContext && initialContext && (() => {
+        const ctxText = initialContext.clipboardText ?? initialContext.selectedText ?? '';
+        const isLong = ctxText.length > 55;
+        return (
+          <div
+            className="shrink-0 cursor-pointer select-none"
+            style={{ borderTop: '0.5px solid var(--border)' }}
+            onClick={() => isLong && setContextExpanded((v) => !v)}
+          >
+            <div className="flex items-start gap-2 px-3 py-1.5">
+              {/* Clipboard icon */}
+              <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 shrink-0 mt-0.5 fill-current" style={{ color: 'var(--accent)', opacity: 0.7 }} aria-hidden>
+                <path d="M4 1.5A1.5 1.5 0 0 1 5.5 0h1A1.5 1.5 0 0 1 8 1.5H9.5A1.5 1.5 0 0 1 11 3v7.5A1.5 1.5 0 0 1 9.5 12h-7A1.5 1.5 0 0 1 1 10.5V3A1.5 1.5 0 0 1 2.5 1.5H4zm1.5-1a.5.5 0 0 0-.5.5v.5h2V1a.5.5 0 0 0-.5-.5h-1z"/>
+              </svg>
+              <div className="flex-1 min-w-0">
+                {!contextExpanded && (
+                  <span className="block text-[12px] truncate font-mono leading-snug" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                    {isLong ? ctxText.slice(0, 55) + '…' : ctxText}
+                  </span>
+                )}
+                {contextExpanded && (
+                  <span
+                    className="block text-[12px] font-mono leading-relaxed whitespace-pre-wrap break-words"
+                    style={{ maxHeight: 88, overflowY: 'auto', color: 'rgba(255,255,255,0.85)' }}
+                  >
+                    {ctxText}
+                  </span>
+                )}
+                {isLong && (
+                  <span className="text-[10px] mt-0.5 block" style={{ color: 'var(--text-muted)' }}>
+                    {contextExpanded ? 'click to collapse' : 'click to expand'}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); setInitialContext(null); setContext(null); setContextExpanded(false); }}
+                className="no-drag shrink-0 transition-colors leading-none text-[10px] mt-0.5"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                aria-label="Clear context"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Separator only when there's content below */}
+      {(hasInitialContext || hasMessages) && <div className="h-px shrink-0" style={{ background: 'var(--border)' }} />}
 
       {/* Messages — scrollable area */}
       {hasMessages && (
@@ -216,7 +272,6 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
               key={s.label}
               onClick={() => {
                 setInput(s.prompt);
-                // Auto-submit for one-shot actions
                 if (s.autoSubmit) {
                   setTimeout(() => {
                     window.dispatchEvent(new CustomEvent('cursi:submit'));
@@ -225,7 +280,22 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
                   window.dispatchEvent(new CustomEvent('cursi:suggestion', { detail: s.prompt }));
                 }
               }}
-              className="px-2 py-0.5 rounded-full text-[11px] text-white/40 border border-white/10 hover:border-cursi-500/50 hover:text-white/70 hover:bg-cursi-500/8 transition-all duration-100"
+              className="px-2.5 py-1 rounded-full text-[12px] transition-all duration-100"
+              style={{
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--text-muted)',
+                background: 'transparent',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)';
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-dim)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--text-muted)';
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+              }}
             >
               {s.label}
             </button>
@@ -234,20 +304,26 @@ export function ChatPage({ onNavigate }: ChatPageProps): React.ReactElement {
       )}
 
       {/* ── Bottom dock ── */}
-      {(hasInitialContext || hasMessages) && <div className="h-px bg-white/5 shrink-0" />}
+      {(hasInitialContext || hasMessages) && <div className="h-px shrink-0" style={{ background: 'var(--border)' }} />}
 
       {/* Active context badge — shown above input when clipboard changed mid-session */}
       {hasNewContext && context && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-cursi-500/8 border-t border-cursi-500/15 shrink-0">
-          <span className="text-[9px] font-semibold text-cursi-400/60 uppercase tracking-wider shrink-0">Using</span>
-          <span className="flex-1 min-w-0 text-[11px] text-white/55 truncate font-mono">
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 shrink-0"
+          style={{ background: 'var(--accent-dim)', borderTop: '1px solid var(--border)' }}
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-wider shrink-0" style={{ color: 'var(--text-muted)' }}>Using</span>
+          <span className="flex-1 min-w-0 text-[12px] truncate font-mono" style={{ color: 'var(--text-secondary)' }}>
             {(context.clipboardText ?? '').length > 50
               ? (context.clipboardText ?? '').slice(0, 50) + '…'
               : (context.clipboardText ?? '')}
           </span>
           <button
             onClick={() => setContext(initialContext)}
-            className="no-drag text-white/20 hover:text-white/50 transition-colors text-[10px] leading-none shrink-0"
+            className="no-drag transition-colors text-[10px] leading-none shrink-0"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
             aria-label="Clear new context"
           >
             ✕

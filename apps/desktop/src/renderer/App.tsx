@@ -3,11 +3,13 @@ import { ChatPage } from './pages/ChatPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { useAuthStore } from './stores/authStore';
+import { useSettingsStore } from './stores/settingsStore';
 
 type Route = '/chat' | '/settings';
 
 export default function App(): React.ReactElement {
   const { session, loading, initialized, initialize } = useAuthStore();
+  const { theme } = useSettingsStore();
   const [route, setRoute] = useState<Route>('/chat');
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -91,7 +93,7 @@ export default function App(): React.ReactElement {
   }
 
   return (
-    <div ref={wrapperRef} className="cursi-enter">
+    <div ref={wrapperRef} className={`cursi-enter theme-${theme}`}>
       {content}
     </div>
   );

@@ -40,11 +40,7 @@ export function LoginPage(): React.ReactElement {
   return (
     <div
       ref={rootRef}
-      className="flex flex-col rounded-2xl overflow-hidden"
-      style={{
-        background: 'rgba(18, 18, 20, 0.98)',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.8), 0 0 0 0.5px rgba(255,255,255,0.07)',
-      }}
+      className="cursi-panel flex flex-col rounded-2xl overflow-hidden"
     >
       {/* Drag region */}
       <div className="drag-region h-6 shrink-0" />

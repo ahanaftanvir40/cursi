@@ -68,3 +68,55 @@ pre, code {
   transform: scale(0.96) translateY(-3px);
   will-change: transform, opacity;
 }
+
+/* ── Themes ─────────────────────────────────────────────────────────────── */
+
+/* Default vars match stealth — no flash before theme class applies */
+:root {
+  --panel-bg: rgba(20, 18, 26, 0.97);
+  --panel-shadow: 0 8px 32px rgba(0,0,0,0.72), 0 0 0 0.5px rgba(139,92,246,0.18);
+  --accent: #8b5cf6;
+  --accent-dim: rgba(139,92,246,0.10);
+  --text-primary: rgba(235,228,255,0.88);
+  --text-secondary: rgba(200,185,255,0.50);
+  --text-muted: rgba(180,165,255,0.28);
+  --border: rgba(139,92,246,0.12);
+  --input-bg: rgba(139,92,246,0.06);
+}
+
+.theme-stealth {
+  --panel-bg: rgba(20, 18, 26, 0.97);
+  --panel-shadow: 0 8px 32px rgba(0,0,0,0.72), 0 0 0 0.5px rgba(139,92,246,0.18);
+  --accent: #8b5cf6;
+  --accent-dim: rgba(139,92,246,0.10);
+  --text-primary: rgba(235,228,255,0.88);
+  --text-secondary: rgba(200,185,255,0.50);
+  --text-muted: rgba(180,165,255,0.28);
+  --border: rgba(139,92,246,0.12);
+  --input-bg: rgba(139,92,246,0.06);
+}
+
+/* Aurora: same dark bg, coloured accents */
+.theme-aurora {
+  --panel-bg: rgba(16, 16, 22, 0.97);
+  --panel-shadow: 0 8px 40px rgba(0,0,0,0.75), 0 0 0 0.5px rgba(99,210,190,0.18);
+  --accent: #34d399;
+  --accent-dim: rgba(52,211,153,0.12);
+  --text-primary: rgba(255,255,255,0.88);
+  --text-secondary: rgba(180,255,220,0.55);
+  --text-muted: rgba(180,255,220,0.28);
+  --border: rgba(52,211,153,0.10);
+  --input-bg: rgba(52,211,153,0.05);
+}
+
+/* Panel base — always uses CSS variables (defaults set on :root) */
+.cursi-panel {
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+}
+
+/* Textarea placeholder inherits theme muted color */
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
