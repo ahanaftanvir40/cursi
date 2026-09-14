@@ -81,8 +81,12 @@ export async function createAIPanel(): Promise<BrowserWindow> {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
-      // In dev, disable web security so localhost:5173 can call localhost:3001
-      webSecurity: !process.env['ELECTRON_RENDERER_URL'],
+      // Disable web security in dev (localhost CORS) and on Windows packaged
+      // (file:// origin causes "null" Origin header which browsers enforce strictly).
+      // macOS packaged uses app:// protocol which doesn't have this restriction.
+      webSecurity: process.env['ELECTRON_RENDERER_URL']
+        ? false   // dev mode — always off
+        : process.platform !== 'win32', // packaged: off on Windows, on on macOS
       // Throttle timers/animations when window is hidden — saves CPU & battery
       backgroundThrottling: true,
     },

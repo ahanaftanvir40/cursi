@@ -26,7 +26,12 @@ export async function buildApp() {
 
   await fastify.register(cors, {
     origin: (origin, cb) => {
+      // No origin header → server-to-server or same-origin → allow
       if (!origin) return cb(null, true);
+
+      // Electron packaged app on Windows sends Origin: "null" (from file:// context)
+      // Electron packaged app on macOS sends Origin: "app://cursi" or no origin
+      if (origin === 'null') return cb(null, true);
 
       const allowed = [
         'http://localhost:5173',
