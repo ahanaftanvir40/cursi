@@ -5,6 +5,31 @@ import type { AIContext } from '@cursi/shared';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
+/** Stringify any unknown error into a human-readable message with full detail */
+function describeError(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+
+  const parts: string[] = [err.message];
+
+  // fetch() wraps the real network error in err.cause
+  if (err.cause instanceof Error) {
+    parts.push(`Cause: ${err.cause.message}`);
+    if (err.cause.cause instanceof Error) {
+      parts.push(`Root: ${err.cause.cause.message}`);
+    }
+  } else if (err.cause !== undefined) {
+    parts.push(`Cause: ${String(err.cause)}`);
+  }
+
+  // Chromium sets err.name to things like "TypeError" but also exposes
+  // net::ERR_* codes on the underlying DOMException in some versions
+  if (err.name && err.name !== 'Error') {
+    parts.unshift(`[${err.name}]`);
+  }
+
+  return parts.join(' — ');
+}
+
 export function useChat() {
   const store = useChatStore();
   const { session } = useAuthStore();
@@ -35,6 +60,12 @@ export function useChat() {
           headers['Authorization'] = `Bearer ${session.access_token}`;
         }
 
+        console.log(`[useChat] POST ${API_URL}/v1/chat`, {
+          platform: navigator.platform,
+          hasAuth: !!session?.access_token,
+          isFirstMessage,
+        });
+
         const response = await fetch(`${API_URL}/v1/chat`, {
           method: 'POST',
           headers,
@@ -45,9 +76,11 @@ export function useChat() {
           }),
         });
 
+        console.log(`[useChat] Response: HTTP ${response.status}`);
+
         if (!response.ok) {
-          const err = await response.json().catch(() => ({})) as { error?: string };
-          throw new Error(err.error ?? `HTTP ${response.status}`);
+          const errBody = await response.json().catch(() => ({})) as { error?: string };
+          throw new Error(errBody.error ?? `HTTP ${response.status}`);
         }
 
         const data = await response.json() as {
@@ -64,8 +97,14 @@ export function useChat() {
 
         store.appendToLastMessage(data.reply);
         store.finalizeLastMessage(assistantId);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Unknown error';
+      } catch (err: unknown) {
+        // Log the full error object — Electron forwards renderer console to main process terminal
+        console.error('[useChat] fetch failed:', err);
+        console.error('[useChat] err.cause:', (err as { cause?: unknown }).cause);
+        console.error('[useChat] full error JSON:', JSON.stringify(err, Object.getOwnPropertyNames(err as object)));
+
+        const msg = describeError(err);
+        console.error('[useChat] displayed error:', msg);
         store.setError(msg);
         store.finalizeLastMessage(assistantId);
       } finally {
