@@ -55,6 +55,10 @@ function positionNearCursor(): void {
 }
 
 export async function createAIPanel(): Promise<BrowserWindow> {
+  const isDevMode = !!process.env['ELECTRON_RENDERER_URL'];
+  const webSecurityEnabled = isDevMode ? false : process.platform !== 'win32';
+  console.log('[main] createAIPanel — platform:', process.platform, '| isDevMode:', isDevMode, '| webSecurity:', webSecurityEnabled);
+
   aiPanel = new BrowserWindow({
     width: AI_PANEL.width,
     height: AI_PANEL.height,
@@ -112,9 +116,10 @@ export async function createAIPanel(): Promise<BrowserWindow> {
     console.error('[main] Renderer failed to load:', code, desc, url);
   });
   aiPanel.webContents.on('console-message', (_event, level, message) => {
+    // Always forward all renderer logs to main process (visible in terminal / Electron log file)
     if (level === 3) console.error('[renderer]', message);
     else if (level === 2) console.warn('[renderer]', message);
-    else console.log('[renderer]', message); // log everything in dev
+    else console.log('[renderer]', message);
   });
 
   // Hide when it loses focus (Spotlight-style UX)

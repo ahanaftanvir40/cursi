@@ -5,6 +5,9 @@ import type { AIContext } from '@cursi/shared';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
+// Log on module load so we can see this in the very first renderer console output
+console.log('[useChat] API_URL =', API_URL, '| VITE_API_URL env =', import.meta.env.VITE_API_URL ?? '(not set)');
+
 /** Stringify any unknown error into a human-readable message with full detail */
 function describeError(err: unknown): string {
   if (!(err instanceof Error)) return String(err);
